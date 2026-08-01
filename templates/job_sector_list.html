@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>{{ page_title }}</h1>
+    <p>{{ page_blurb }}</p>
+    <div class="sector-switch">
+      <a href="{% url 'jobs_public' %}" class="{% if active_sector == 'public' %}active{% endif %}">Public Sector</a>
+      <a href="{% url 'jobs_private' %}" class="{% if active_sector == 'private' %}active{% endif %}">Private Sector</a>
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    {% include "partials/_job_grid.html" %}
+  </div>
+</section>
+{% endblock %}

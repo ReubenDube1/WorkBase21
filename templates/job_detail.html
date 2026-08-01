@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section job-detail">
+  <div class="container job-detail-inner">
+
+    <a href="javascript:history.back()" class="btn btn-back">&larr; Back</a>
+
+    <div class="job-detail-card fade-in">
+
+      {% if job.image %}
+      <div class="job-detail-image">
+        <img src="{{ job.image.url }}" alt="{{ job.title }}">
+      </div>
+      {% endif %}
+
+      <div class="job-detail-header">
+        <div class="job-detail-logo">
+          {% if job.company.logo %}
+            <img src="{{ job.company.logo.url }}" alt="{{ job.company.name }} logo">
+          {% else %}
+            <span class="logo-fallback">{{ job.company.name|slice:":1" }}</span>
+          {% endif %}
+        </div>
+        <div>
+          <span class="job-type-badge job-type-{{ job.type }}">{{ job.type_label }}</span>
+          {% if job.type == 'job' %}
+            <span class="job-type-badge">{{ job.sector_label }}</span>
+          {% endif %}
+          <h1>{{ job.title }}</h1>
+          <p class="job-detail-company">{{ job.company.name }}</p>
+        </div>
+      </div>
+
+      <div class="job-detail-facts">
+        <div class="fact">
+          <span class="fact-label">Location</span>
+          <span class="fact-value">{{ job.location }}</span>
+        </div>
+        {% if job.salary %}
+        <div class="fact">
+          <span class="fact-label">Salary</span>
+          <span class="fact-value">{{ job.salary }}</span>
+        </div>
+        {% endif %}
+        <div class="fact">
+          <span class="fact-label">Deadline</span>
+          <span class="fact-value {% if job.is_expired %}expired{% endif %}">{{ job.deadline|date:"d M Y" }}</span>
+        </div>
+        <div class="fact">
+          <span class="fact-label">Job Type</span>
+          <span class="fact-value">{{ job.type_label }}</span>
+        </div>
+        <div class="fact">
+          <span class="fact-label">Posted</span>
+          <span class="fact-value">{{ job.created_at|date:"d M Y" }}</span>
+        </div>
+      </div>
+
+      {% with blocks=job.description_blocks %}
+        {% for block in blocks %}
+          <div class="job-detail-body">{{ block|safe }}</div>
+          {% if not forloop.last %}
+          <div class="ad-placeholder">
+            <span class="ad-label">Advertisement</span>
+            <div class="ad-box">
+              <p>Google AdSense Placeholder</p>
+              <span>728 &times; 90 Banner</span>
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+      {% endwith %}
+
+      {% if job.sector == 'public' and job.z83_form %}
+      <div class="z83-box">
+        <a href="{{ job.z83_form.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-z83">
+          Download Z83 Form
+        </a>
+      </div>
+      {% endif %}
+
+      <div class="job-detail-actions">
+        {% if job.is_expired %}
+          <span class="btn btn-disabled">Applications Closed</span>
+        {% else %}
+          {% if job.application_link %}
+            <a href="{{ job.application_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">Apply Now</a>
+          {% endif %}
+        {% endif %}
+        <a href="javascript:history.back()" class="btn btn-outline btn-lg">Back</a>
+      </div>
+
+      {% if job.application_email and not job.is_expired %}
+      <div class="apply-email-box">
+        <span>Apply by email:</span>
+        <a href="mailto:{{ job.application_email }}" id="apply-email-link">{{ job.application_email }}</a>
+        <button type="button" class="copy-email-btn" id="copy-email-btn" data-email="{{ job.application_email }}">Copy Email</button>
+      </div>
+      {% endif %}
+
+      <div class="share-section">
+        <h3>Share this opportunity</h3>
+        <div class="share-links">
+          <a class="share-link share-facebook" target="_blank" rel="noopener noreferrer"
+             href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri|urlencode }}"
+             aria-label="Share on Facebook">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z"/></svg>
+          </a>
+          <a class="share-link share-twitter" target="_blank" rel="noopener noreferrer"
+             href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri|urlencode }}&text={{ job.title|urlencode }}"
+             aria-label="Share on X (Twitter)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.4 8.4L23 22h-6.9l-5.4-6.8L4.6 22H1.5l7.9-9L1 2h7l4.9 6.2L18.9 2Zm-1.2 18h1.9L7.4 4H5.4l12.3 16Z"/></svg>
+          </a>
+          <a class="share-link share-pinterest" target="_blank" rel="noopener noreferrer"
+             href="https://pinterest.com/pin/create/button/?url={{ request.build_absolute_uri|urlencode }}&description={{ job.title|urlencode }}{% if job.image %}&media={{ job.image.url }}{% endif %}"
+             aria-label="Share on Pinterest">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.2 2.6 7.8 6.3 9.3-.1-.8-.2-2 0-2.9l1.4-6s-.4-.7-.4-1.8c0-1.7 1-2.9 2.2-2.9 1 0 1.5.8 1.5 1.7 0 1-.7 2.6-1 4-.3 1.2.6 2.2 1.8 2.2 2.1 0 3.7-2.2 3.7-5.5 0-2.9-2.1-4.9-5-4.9-3.4 0-5.5 2.6-5.5 5.2 0 1 .4 2.1.9 2.7.1.1.1.2.1.3-.1.4-.3 1.2-.3 1.4-.1.2-.2.3-.4.2-1.5-.7-2.4-2.9-2.4-4.6 0-3.8 2.7-7.2 7.9-7.2 4.1 0 7.4 3 7.4 6.9 0 4.1-2.6 7.4-6.1 7.4-1.2 0-2.3-.6-2.7-1.4l-.7 2.8c-.3 1-1 2.3-1.5 3.1.9.3 1.9.4 3 .4 5.5 0 10-4.5 10-10S17.5 2 12 2Z"/></svg>
+          </a>
+          <a class="share-link share-linkedin" target="_blank" rel="noopener noreferrer"
+             href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri|urlencode }}"
+             aria-label="Share on LinkedIn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5A2.5 2.5 0 1 1 5 8.5a2.5 2.5 0 0 1-.02-5ZM3 9h4v12H3V9Zm7 0h3.8v1.7h.05c.53-1 1.83-2 3.77-2 4 0 4.75 2.6 4.75 6.1V21h-4v-5.4c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V21h-4V9Z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {% if related_jobs %}
+    <div class="related-jobs fade-in">
+      <h2>Related Opportunities</h2>
+      <div class="job-grid">
+        {% for job in related_jobs %}
+          {% include "partials/_job_card.html" %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  var copyBtn = document.getElementById('copy-email-btn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function () {
+      var email = copyBtn.getAttribute('data-email');
+      navigator.clipboard.writeText(email).then(function () {
+        var original = copyBtn.textContent;
+        copyBtn.textContent = 'Copied!';
+        copyBtn.classList.add('copied');
+        setTimeout(function () {
+          copyBtn.textContent = original;
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      });
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>Jobs</h1>
+    <p>Choose the kind of job you're looking for.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="sector-grid">
+      <a href="{% url 'jobs_public' %}" class="sector-card fade-in">
+        <span class="sector-icon">🏛️</span>
+        <h3>Public Sector Jobs</h3>
+        <p>Government departments, state-owned entities and municipalities.</p>
+        <span class="sector-count">{{ public_count }} open listing{{ public_count|pluralize }}</span>
+        <span class="btn btn-outline btn-block">View Public Sector Jobs</span>
+      </a>
+
+      <a href="{% url 'jobs_private' %}" class="sector-card fade-in">
+        <span class="sector-icon">🏢</span>
+        <h3>Private Sector Jobs</h3>
+        <p>Roles at companies and organisations across every industry.</p>
+        <span class="sector-count">{{ private_count }} open listing{{ private_count|pluralize }}</span>
+        <span class="btn btn-outline btn-block">View Private Sector Jobs</span>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% load static %}
+<article class="job-card fade-in">
+  {% if job.image %}
+  <div class="job-card-image">
+    <img src="{{ job.image.url }}" alt="{{ job.title }}" loading="lazy">
+  </div>
+  {% endif %}
+  <div class="job-card-top">
+    <div class="job-card-logo">
+      {% if job.company.logo %}
+        <img src="{{ job.company.logo.url }}" alt="{{ job.company.name }} logo">
+      {% else %}
+        <span class="logo-fallback">{{ job.company.name|slice:":1" }}</span>
+      {% endif %}
+    </div>
+    <span class="job-type-badge job-type-{{ job.type }}">{{ job.type_label }}</span>
+  </div>
+
+  <h3 class="job-card-title">{{ job.title }}</h3>
+  <p class="job-card-company">{{ job.company.name }}</p>
+
+  <div class="job-card-meta">
+    <span class="meta-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+      {{ job.location }}
+    </span>
+    {% if job.salary %}
+    <span class="meta-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      {{ job.salary }}
+    </span>
+    {% endif %}
+    <span class="meta-item deadline {% if job.is_expired %}expired{% endif %}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Deadline: {{ job.deadline|date:"d M Y" }}
+    </span>
+  </div>
+
+  <a href="{% url 'job_detail' job.pk %}" class="btn btn-outline btn-block">Read More</a>
+</article>

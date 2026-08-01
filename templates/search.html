@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>Search Results</h1>
+    {% if query %}
+      <p>{{ result_count }} result{{ result_count|pluralize }} for &ldquo;{{ query }}&rdquo;</p>
+    {% else %}
+      <p>Enter a keyword above to search jobs, internships, learnerships, in-service trainee positions and bursaries.</p>
+    {% endif %}
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    {% include "partials/_job_grid.html" %}
+  </div>
+</section>
+{% endblock %}

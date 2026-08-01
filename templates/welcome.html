@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="hero">
+  <div class="container hero-inner">
+    <span class="eyebrow">South Africa's opportunity board</span>
+    <h1>Find your next opportunity, faster.</h1>
+    <p class="hero-sub">Jobs, internships, learnerships, in-service trainee positions and bursaries — all in one place.</p>
+
+    <form action="{% url 'search' %}" method="get" class="hero-search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" name="q" placeholder="Search by title, company or location..." aria-label="Search">
+      <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <div class="hero-tags">
+      {% for item in nav_job_types %}
+        <a href="{% url item.slug %}" class="tag-pill">{{ item.label }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <h2>Latest Opportunities</h2>
+      <p>Freshly posted listings from trusted employers.</p>
+    </div>
+    {% include "partials/_job_grid.html" %}
+  </div>
+</section>
+
+{% if trending_topics %}
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-heading">
+      <h2>What's Trending in the Job Market</h2>
+      <p>A quick pulse on where the opportunities are moving.</p>
+    </div>
+    <div class="trending-grid">
+      {% for trend in trending_topics %}
+      <div class="trend-card fade-in">
+        {% if trend.icon %}<span class="trend-icon">{{ trend.icon }}</span>{% endif %}
+        <div>
+          <p class="trend-title">{{ trend.title }}</p>
+          {% if trend.description %}<p class="trend-desc">{{ trend.description }}</p>{% endif %}
+          {% if trend.stat %}<span class="trend-stat">{{ trend.stat }}</span>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if reviews %}
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <h2>What Job Seekers Say</h2>
+      <p>Feedback from people and organisations who've used WorkBase21.</p>
+    </div>
+    <div class="review-grid">
+      {% for review in reviews %}
+      <div class="review-card fade-in">
+        <div class="review-stars">{% for _ in review.star_range %}★{% endfor %}</div>
+        <p class="review-message">&ldquo;{{ review.message }}&rdquo;</p>
+        <p class="review-author">{{ review.name }}</p>
+        {% if review.role %}<p class="review-role">{{ review.role }}</p>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

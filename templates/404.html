@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section error-page">
+  <div class="container">
+    <span class="error-code">404</span>
+    <h1>Page Not Found</h1>
+    <p>The page you're looking for may have moved, or the opportunity may no longer be listed.</p>
+    <a href="{% url 'welcome' %}" class="btn btn-primary btn-lg">Back to Home</a>
+  </div>
+</section>
+{% endblock %}

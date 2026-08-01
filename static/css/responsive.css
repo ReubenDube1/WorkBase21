@@ -1,0 +1,75 @@
+/* ==========================================================================
+   Tablet (<= 1024px)
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .footer-grid { grid-template-columns: 1.5fr 1fr 1fr; }
+  .footer-links:nth-child(4) { grid-column: 2 / 4; }
+}
+
+/* ==========================================================================
+   Small tablet / large mobile (<= 860px) — mobile nav kicks in
+   ========================================================================== */
+@media (max-width: 860px) {
+  .nav-search { display: none; }
+  .hamburger { display: flex; }
+
+  .main-nav {
+    position: fixed;
+    top: var(--header-height);
+    left: 0; right: 0;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition);
+    z-index: 99;
+  }
+  .main-nav.open { max-height: 400px; }
+
+  .nav-links {
+    flex-direction: column;
+    gap: 0;
+    padding: 8px 24px 16px;
+  }
+  .nav-links li { border-bottom: 1px solid var(--border); }
+  .nav-links li:last-child { border-bottom: none; }
+  .nav-links a { display: block; padding: 14px 0; }
+  .nav-links a::after { display: none; }
+
+  .job-detail-header { flex-direction: column; align-items: flex-start; }
+}
+
+/* ==========================================================================
+   Mobile (<= 640px)
+   ========================================================================== */
+@media (max-width: 640px) {
+  .section { padding: 48px 0; }
+  .hero { padding: 64px 0 48px; }
+  .hero-search { flex-wrap: wrap; padding: 16px; }
+  .hero-search input { width: 100%; order: 1; }
+  .hero-search .btn { width: 100%; order: 2; }
+  .hero-search svg { display: none; }
+
+  .job-grid { grid-template-columns: 1fr; }
+
+  .job-detail-card { padding: 24px; }
+  .job-detail-facts { grid-template-columns: repeat(2, 1fr); }
+
+  .footer-grid { grid-template-columns: 1fr; text-align: left; }
+  .footer-links:nth-child(4) { grid-column: auto; }
+
+  #back-to-top { bottom: 18px; right: 18px; width: 42px; height: 42px; }
+
+  .job-detail-actions { flex-direction: column; }
+  .job-detail-actions .btn { width: 100%; }
+}
+
+/* ==========================================================================
+   Very small phones (<= 380px)
+   ========================================================================== */
+@media (max-width: 380px) {
+  .logo-text { font-size: 1.05rem; }
+  .hero h1 { font-size: 1.9rem; }
+  .job-detail-facts { grid-template-columns: 1fr; }
+}

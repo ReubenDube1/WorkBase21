@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>Contact Us</h1>
+    <p>Questions, feedback, or partnership enquiries — we'd love to hear from you.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow-content">
+    <form method="post" class="contact-form fade-in">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+            <p class="form-error">{{ field.errors|striptags }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary btn-lg">Send Message</button>
+    </form>
+  </div>
+</section>
+{% endblock %}
