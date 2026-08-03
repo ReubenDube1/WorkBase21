@@ -149,10 +149,7 @@ if os.environ.get('RENDER'):
 else:
     MEDIA_ROOT = BASE_DIR / 'media'
 
-# Ensure the persistent directories exist on Render
-if os.environ.get('RENDER'):
-    os.makedirs('/var/data', exist_ok=True)
-    os.makedirs('/var/data/media', exist_ok=True)
+
 
 # CKEditor configuration
 CKEDITOR_UPLOAD_PATH = "uploads/"
