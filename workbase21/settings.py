@@ -97,14 +97,24 @@ WSGI_APPLICATION = 'workbase21.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-# SQLite is used here for Render Free Tier deployment as requested.
+# On Render we store the SQLite file on a Persistent Disk so it survives redeploys.
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if os.environ.get('RENDER'):
+    # Persistent disk path (must match the Mount Path you set in Render)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': '/var/data/db.sqlite3',
+        }
     }
-}
+else:
+    # Local development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -133,7 +143,16 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (job/company logo uploads, CKEditor uploads)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+
+if os.environ.get('RENDER'):
+    MEDIA_ROOT = '/var/data/media'
+else:
+    MEDIA_ROOT = BASE_DIR / 'media'
+
+# Ensure the persistent directories exist on Render
+if os.environ.get('RENDER'):
+    os.makedirs('/var/data', exist_ok=True)
+    os.makedirs('/var/data/media', exist_ok=True)
 
 # CKEditor configuration
 CKEDITOR_UPLOAD_PATH = "uploads/"
@@ -164,11 +183,7 @@ SITE_DESCRIPTION = (
     'learnerships, in-service trainee positions and bursaries.'
 )
 
-# By default, Django only prints error tracebacks to the console when
-# DEBUG=True — which means in production (DEBUG=False, as it should be)
-# a 500 error shows nothing useful in Render's logs. This config forces
-# full tracebacks to always print to the console/Render logs, regardless
-# of DEBUG, so real errors are actually diagnosable in production.
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
