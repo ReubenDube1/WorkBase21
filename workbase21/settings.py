@@ -97,10 +97,10 @@ WSGI_APPLICATION = 'workbase21.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-# On Render we store the SQLite file on a Persistent Disk so it survives redeploys.
+# Only use the persistent disk when it is actually available (runtime).
+# During the build stage the disk is not mounted yet.
 
-if os.environ.get('RENDER'):
-    # Persistent disk path (must match the Mount Path you set in Render)
+if os.environ.get('RENDER') and os.path.exists('/var/data'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -108,7 +108,7 @@ if os.environ.get('RENDER'):
         }
     }
 else:
-    # Local development
+    # Local development + Render build stage
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -144,11 +144,10 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Media files (job/company logo uploads, CKEditor uploads)
 MEDIA_URL = '/media/'
 
-if os.environ.get('RENDER'):
+if os.environ.get('RENDER') and os.path.exists('/var/data'):
     MEDIA_ROOT = '/var/data/media'
 else:
     MEDIA_ROOT = BASE_DIR / 'media'
-
 
 
 # CKEditor configuration
