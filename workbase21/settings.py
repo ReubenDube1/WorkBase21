@@ -163,3 +163,29 @@ SITE_DESCRIPTION = (
     'WorkBase21 connects South African job seekers with jobs, internships, '
     'learnerships, in-service trainee positions and bursaries.'
 )
+
+# By default, Django only prints error tracebacks to the console when
+# DEBUG=True — which means in production (DEBUG=False, as it should be)
+# a 500 error shows nothing useful in Render's logs. This config forces
+# full tracebacks to always print to the console/Render logs, regardless
+# of DEBUG, so real errors are actually diagnosable in production.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
