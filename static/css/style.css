@@ -587,10 +587,17 @@ h1, h2, h3, h4 {
    Scroll fade-in animation
    ========================================================================== */
 .fade-in {
-  opacity: 0;
-  transform: translateY(18px);
+  opacity: 1;
+  transform: none;
   transition: opacity 600ms ease, transform 600ms ease;
 }
+
+/* Only hide elements that are waiting for the animation */
+.fade-in:not(.in-view) {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
 .fade-in.in-view { opacity: 1; transform: translateY(0); }
 
 /* ==========================================================================

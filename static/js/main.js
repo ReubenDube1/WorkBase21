@@ -91,22 +91,33 @@ document.addEventListener('DOMContentLoaded', function () {
   /* ---------------------------------------------------------------------
      5. Fade-in animation while scrolling (job cards, content blocks)
      --------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------
+   5. Fade-in animation while scrolling (job cards, content blocks)
+   --------------------------------------------------------------------- */
   var fadeEls = document.querySelectorAll('.fade-in');
   if ('IntersectionObserver' in window && fadeEls.length) {
-    var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12 });
+   var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
 
-    fadeEls.forEach(function (el) { observer.observe(el); });
-  } else {
-    // Fallback: no IntersectionObserver support — just show everything.
-    fadeEls.forEach(function (el) { el.classList.add('in-view'); });
-  }
+  fadeEls.forEach(function (el) {
+    // Immediately show anything already visible in the viewport
+    var rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      el.classList.add('in-view');
+    } else {
+      observer.observe(el);
+    }
+  });
+} else {
+  // Fallback: no IntersectionObserver support — just show everything
+  fadeEls.forEach(function (el) { el.classList.add('in-view'); });
+}
 
   /* ---------------------------------------------------------------------
      6. Search box micro-animation (focus pulse)
