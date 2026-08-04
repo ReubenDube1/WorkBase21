@@ -37,18 +37,19 @@
   <div class="container">
     <div class="section-heading">
       <h2>What's Trending in the Job Market</h2>
-      <p>A quick pulse on where the opportunities are moving.</p>
+      <p>A quick pulse on where the opportunities are moving. <a href="{% url 'trending_list' %}">Read our career resources &rarr;</a></p>
     </div>
     <div class="trending-grid">
       {% for trend in trending_topics %}
-      <div class="trend-card fade-in">
+      {% if trend.is_article %}<a href="{{ trend.get_absolute_url }}" class="trend-card fade-in">{% else %}<div class="trend-card fade-in">{% endif %}
         {% if trend.icon %}<span class="trend-icon">{{ trend.icon }}</span>{% endif %}
         <div>
           <p class="trend-title">{{ trend.title }}</p>
           {% if trend.description %}<p class="trend-desc">{{ trend.description }}</p>{% endif %}
           {% if trend.stat %}<span class="trend-stat">{{ trend.stat }}</span>{% endif %}
+          {% if trend.is_article %}<span class="trend-read-more">Read article &rarr;</span>{% endif %}
         </div>
-      </div>
+      {% if trend.is_article %}</a>{% else %}</div>{% endif %}
       {% endfor %}
     </div>
   </div>

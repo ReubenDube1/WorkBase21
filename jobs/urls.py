@@ -15,6 +15,9 @@ urlpatterns = [
     path('job/<int:pk>/', views.job_detail, name='job_detail'),
     path('search/', views.search_results, name='search'),
 
+    path('resources/', views.trending_list, name='trending_list'),
+    path('resources/<slug:slug>/', views.trending_detail, name='trending_detail'),
+
     path('about/', views.about, name='about'),
     path('contact/', views.contact, name='contact'),
     path('privacy-policy/', views.privacy, name='privacy'),

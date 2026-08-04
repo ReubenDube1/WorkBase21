@@ -199,10 +199,26 @@ class Review(models.Model):
 
 class TrendingTopic(models.Model):
     """An entry in the homepage 'What's Trending in the Job Market'
-    section. Fully editable from the admin — no code changes needed."""
+    section. Fully editable from the admin — no code changes needed.
+
+    Every entry always shows as a short stat card on the homepage.
+    If you also fill in the Article Body, it additionally becomes a
+    full, clickable article page — useful for original career-advice
+    content (CV tips, Z83 guides, etc.) without needing a separate
+    blog app."""
 
     title = models.CharField(max_length=150)
-    description = models.CharField(max_length=250, blank=True)
+    slug = models.SlugField(
+        max_length=180,
+        unique=True,
+        blank=True,
+        help_text="Used in the article URL. Leave blank to auto-generate from the title."
+    )
+    description = models.CharField(
+        max_length=250,
+        blank=True,
+        help_text="Short teaser shown on the homepage card."
+    )
     stat = models.CharField(
         max_length=50,
         blank=True,
@@ -213,12 +229,52 @@ class TrendingTopic(models.Model):
         blank=True,
         help_text="An emoji to display, e.g. 💻 📈 🏥"
     )
+
+    body = RichTextUploadingField(
+        "Article Body",
+        blank=True,
+        default='',
+        help_text=(
+            "Optional. Leave blank to keep this as a stat-only homepage "
+            "card. Fill this in to publish a full article page — the "
+            "homepage card automatically becomes clickable."
+        )
+    )
+    author_name = models.CharField(
+        max_length=100,
+        blank=True,
+        default="WorkBase21 Team",
+        help_text="Shown on the article page. Only used if Article Body is filled in."
+    )
+
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['order', 'id']
         verbose_name = "Trending Topic"
+        verbose_name_plural = "Trending Topics & Articles"
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            base_slug = slugify(self.title)[:170]
+            slug = base_slug
+            counter = 2
+            while TrendingTopic.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('trending_detail', kwargs={'slug': self.slug})
+
+    @property
+    def is_article(self):
+        return bool(self.body)

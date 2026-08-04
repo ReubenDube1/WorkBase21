@@ -177,6 +177,46 @@ def about(request):
     })
 
 
+def trending_list(request):
+    """Resources / career advice hub — lists every TrendingTopic that
+    has a full article body, newest first."""
+    articles = TrendingTopic.objects.filter(
+        is_active=True
+    ).exclude(body='').order_by('-updated_at')
+    page_obj = _paginate(request, articles, per_page=9)
+    return render(request, 'trending_list.html', {
+        'page_obj': page_obj,
+        'page_title': 'Career Resources',
+        'meta_description': (
+            'Career advice, CV tips, and guides to help South African '
+            'job seekers navigate jobs, internships, learnerships and '
+            'bursaries on WorkBase21.'
+        ),
+    })
+
+
+def trending_detail(request, slug):
+    """Full article page for a TrendingTopic that has a body. 404s for
+    stat-only cards that were never meant to have their own page."""
+    article = get_object_or_404(
+        TrendingTopic, slug=slug, is_active=True
+    )
+    if not article.is_article:
+        from django.http import Http404
+        raise Http404("This entry doesn't have a published article.")
+
+    related_articles = TrendingTopic.objects.filter(
+        is_active=True
+    ).exclude(pk=article.pk).exclude(body='').order_by('-updated_at')[:3]
+
+    return render(request, 'trending_detail.html', {
+        'article': article,
+        'related_articles': related_articles,
+        'page_title': article.title,
+        'meta_description': article.description or article.title,
+    })
+
+
 def contact(request):
     form = ContactForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():

@@ -99,6 +99,29 @@ class ReviewAdmin(admin.ModelAdmin):
 
 @admin.register(TrendingTopic)
 class TrendingTopicAdmin(admin.ModelAdmin):
-    list_display = ('title', 'stat', 'icon', 'order', 'is_active')
+    list_display = ('title', 'stat', 'icon', 'has_article', 'order', 'is_active', 'updated_at')
     list_editable = ('order', 'is_active')
     list_filter = ('is_active',)
+    search_fields = ('title', 'description', 'body')
+    prepopulated_fields = {'slug': ('title',)}
+
+    fieldsets = (
+        ('Homepage Card', {
+            'fields': ('title', 'description', 'stat', 'icon', 'order', 'is_active'),
+            'description': 'Every entry shows as a short stat card on the homepage regardless of the fields below.',
+        }),
+        ('Full Article (optional)', {
+            'fields': ('slug', 'author_name', 'body'),
+            'description': (
+                'Fill in the Article Body to also publish this as a full, '
+                'clickable article page — great for original career-advice '
+                'content like CV tips or Z83 form guides. Leave it blank to '
+                'keep this as a stat-only homepage card.'
+            ),
+        }),
+    )
+
+    def has_article(self, obj):
+        return obj.is_article
+    has_article.boolean = True
+    has_article.short_description = "Article?"
