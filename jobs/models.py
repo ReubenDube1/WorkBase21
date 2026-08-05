@@ -231,15 +231,23 @@ class TrendingTopic(models.Model):
     )
 
     body = RichTextUploadingField(
-        "Article Body",
+        "Article Body — Part 1",
         blank=True,
         default='',
+        config_name='article',
         help_text=(
             "Optional. Leave blank to keep this as a stat-only homepage "
             "card. Fill this in to publish a full article page — the "
-            "homepage card automatically becomes clickable."
+            "homepage card automatically becomes clickable. Use the "
+            "image icon in the toolbar to insert and position pictures "
+            "anywhere in the text."
         )
     )
+    body2 = RichTextUploadingField("Article Body — Part 2", blank=True, default='', config_name='article')
+    body3 = RichTextUploadingField("Article Body — Part 3", blank=True, default='', config_name='article')
+    body4 = RichTextUploadingField("Article Body — Part 4", blank=True, default='', config_name='article')
+    body5 = RichTextUploadingField("Article Body — Part 5", blank=True, default='', config_name='article')
+
     author_name = models.CharField(
         max_length=100,
         blank=True,
@@ -278,3 +286,14 @@ class TrendingTopic(models.Model):
     @property
     def is_article(self):
         return bool(self.body)
+
+    @property
+    def body_blocks(self):
+        """All non-empty article body parts, in order, for looping in
+        the article template — lets images/text be paced across
+        several boxes instead of one long block."""
+        return [
+            block for block in [
+                self.body, self.body2, self.body3, self.body4, self.body5,
+            ] if block
+        ]

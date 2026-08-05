@@ -102,7 +102,7 @@ class TrendingTopicAdmin(admin.ModelAdmin):
     list_display = ('title', 'stat', 'icon', 'has_article', 'order', 'is_active', 'updated_at')
     list_editable = ('order', 'is_active')
     list_filter = ('is_active',)
-    search_fields = ('title', 'description', 'body')
+    search_fields = ('title', 'description', 'body', 'body2', 'body3', 'body4', 'body5')
     prepopulated_fields = {'slug': ('title',)}
 
     fieldsets = (
@@ -110,14 +110,34 @@ class TrendingTopicAdmin(admin.ModelAdmin):
             'fields': ('title', 'description', 'stat', 'icon', 'order', 'is_active'),
             'description': 'Every entry shows as a short stat card on the homepage regardless of the fields below.',
         }),
-        ('Full Article (optional)', {
-            'fields': ('slug', 'author_name', 'body'),
+        ('Full Article — Setup (optional)', {
+            'fields': ('slug', 'author_name'),
             'description': (
-                'Fill in the Article Body to also publish this as a full, '
+                'Fill in Article Body — Part 1 below to publish this as a full, '
                 'clickable article page — great for original career-advice '
-                'content like CV tips or Z83 form guides. Leave it blank to '
-                'keep this as a stat-only homepage card.'
+                'content like CV tips or Z83 form guides. Leave all body parts '
+                'blank to keep this as a stat-only homepage card.'
             ),
+        }),
+        ('Article Body — Part 1', {
+            'fields': ('body',),
+            'description': 'Use the image icon in the toolbar to insert and position pictures anywhere in the text.',
+        }),
+        ('Article Body — Part 2', {
+            'fields': ('body2',),
+            'classes': ('collapse',),
+        }),
+        ('Article Body — Part 3', {
+            'fields': ('body3',),
+            'classes': ('collapse',),
+        }),
+        ('Article Body — Part 4', {
+            'fields': ('body4',),
+            'classes': ('collapse',),
+        }),
+        ('Article Body — Part 5', {
+            'fields': ('body5',),
+            'classes': ('collapse',),
         }),
     )
 

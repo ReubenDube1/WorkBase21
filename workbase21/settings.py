@@ -166,6 +166,24 @@ CKEDITOR_CONFIGS = {
         'height': 300,
         'width': '100%',
     },
+    # Used for TrendingTopic article body fields — adds image insertion
+    # so pictures can be dropped in and positioned anywhere in the text,
+    # not just as a single banner image.
+    'article': {
+        'toolbar': 'Custom',
+        'toolbar_Custom': [
+            ['Bold', 'Italic', 'Underline'],
+            ['NumberedList', 'BulletedList'],
+            ['Blockquote'],
+            ['Link', 'Unlink'],
+            ['Image'],
+            ['Format'],
+            ['RemoveFormat', 'Source'],
+        ],
+        'height': 350,
+        'width': '100%',
+        'filebrowserUploadMethod': 'form',
+    },
 }
 
 # Default primary key field type

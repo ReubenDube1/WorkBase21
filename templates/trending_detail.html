@@ -12,9 +12,11 @@
         <p class="article-detail-meta">By {{ article.author_name }} &middot; Updated {{ article.updated_at|date:"d M Y" }}</p>
       </div>
 
-      <div class="job-detail-body article-body">
-        {{ article.body|safe }}
+      {% for block in article.body_blocks %}
+      <div class="job-detail-body article-body article-body-block">
+        {{ block|safe }}
       </div>
+      {% endfor %}
 
       <div class="share-section">
         <h3>Share this article</h3>

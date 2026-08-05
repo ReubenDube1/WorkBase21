@@ -800,3 +800,36 @@ a.trend-card:hover .trend-read-more { text-decoration: underline; }
 .article-body h2, .article-body h3 { margin: 24px 0 12px; }
 .article-body p { margin-bottom: 16px; }
 .article-body ul, .article-body ol { margin: 0 0 16px 22px; }
+.article-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  margin: 20px 0;
+  display: block;
+  box-shadow: var(--shadow-sm);
+}
+/* CKEditor's built-in alignment classes, so images placed left/right/center render correctly */
+.article-body img.image_resized { height: auto; }
+.article-body p > img:only-child { margin-left: auto; margin-right: auto; }
+.article-body .image-style-align-left,
+.article-body img[style*="float: left"],
+.article-body img[style*="float:left"] {
+  float: left;
+  margin: 6px 24px 16px 0;
+  max-width: 45%;
+}
+.article-body .image-style-align-right,
+.article-body img[style*="float: right"],
+.article-body img[style*="float:right"] {
+  float: right;
+  margin: 6px 0 16px 24px;
+  max-width: 45%;
+}
+.article-body blockquote {
+  border-left: 3px solid var(--primary);
+  padding: 4px 20px;
+  margin: 20px 0;
+  color: var(--text-grey);
+  font-style: italic;
+}
+.article-body-block { overflow: auto; }

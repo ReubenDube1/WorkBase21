@@ -54,7 +54,7 @@ def welcome(request):
             "Browse jobs, internships, learnerships, in-service trainee "
             "positions and bursaries across South Africa on WorkBase21."
         ),
-        'trending_topics': TrendingTopic.objects.filter(is_active=True),
+        'trending_topics': TrendingTopic.objects.filter(is_active=True)[:6],
         'reviews': Review.objects.filter(is_published=True)[:6],
     }
     return render(request, 'welcome.html', context)
