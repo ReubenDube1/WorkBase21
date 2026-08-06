@@ -12,7 +12,8 @@ urlpatterns = [
     path('in-service-trainee/', views.job_list_by_type, {'job_type': 'inservice'}, name='inservice'),
     path('bursaries/', views.job_list_by_type, {'job_type': 'bursaries'}, name='bursaries'),
 
-    path('job/<int:pk>/', views.job_detail, name='job_detail'),
+    path('job/<int:pk>/<slug:slug>/', views.job_detail, name='job_detail'),
+    path('job/<int:pk>/', views.job_detail_legacy_redirect, name='job_detail_legacy'),
     path('search/', views.search_results, name='search'),
 
     path('resources/', views.trending_list, name='trending_list'),

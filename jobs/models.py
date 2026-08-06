@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.text import slugify
 from ckeditor_uploader.fields import RichTextUploadingField
 
 
@@ -130,7 +131,7 @@ class Job(models.Model):
         return f"{self.title} at {self.company.name}"
 
     def get_absolute_url(self):
-        return reverse('job_detail', kwargs={'pk': self.pk})
+        return reverse('job_detail', kwargs={'pk': self.pk, 'slug': self.slug})
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -139,6 +140,15 @@ class Job(models.Model):
                 "Provide either an Application Link or an Application "
                 "Email so job seekers know how to apply."
             )
+
+    @property
+    def slug(self):
+        """A readable, SEO/share-friendly URL segment including the
+        company name, e.g. 'software-developer-savanna-tech-solutions'.
+        Computed on the fly (not stored) so it always reflects the
+        current title/company — no migration or backfill needed, and
+        it can never go stale or out of sync."""
+        return slugify(f"{self.title}-{self.company.name}")[:200]
 
     @property
     def is_expired(self):

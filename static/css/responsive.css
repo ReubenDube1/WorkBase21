@@ -54,6 +54,7 @@
   .job-grid { grid-template-columns: 1fr; }
 
   .job-detail-card { padding: 24px; }
+  .job-detail-image { height: 260px; }
   .job-detail-facts { grid-template-columns: repeat(2, 1fr); }
 
   .footer-grid { grid-template-columns: 1fr; text-align: left; }

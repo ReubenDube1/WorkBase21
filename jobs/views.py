@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib import messages
@@ -126,8 +126,15 @@ def job_list_by_type(request, job_type):
     return render(request, template_map[job_type], context)
 
 
-def job_detail(request, pk):
+def job_detail(request, pk, slug):
     job = get_object_or_404(Job.objects.select_related('company'), pk=pk)
+
+    # Keep URLs canonical for SEO/sharing — if someone hits an outdated
+    # or hand-edited slug (e.g. the job title or company name changed
+    # since the link was shared), redirect permanently to the current
+    # correct URL rather than silently serving it under a stale slug.
+    if slug != job.slug:
+        return redirect(job.get_absolute_url(), permanent=True)
 
     related_jobs = Job.objects.filter(
         type=job.type, is_active=True, deadline__gte=timezone.localdate()
@@ -143,6 +150,14 @@ def job_detail(request, pk):
         ),
     }
     return render(request, 'job_detail.html', context)
+
+
+def job_detail_legacy_redirect(request, pk):
+    """Old links used /job/<pk>/ with no slug. Keep those working by
+    redirecting permanently to the current canonical URL, instead of
+    breaking any links already shared or indexed."""
+    job = get_object_or_404(Job, pk=pk)
+    return redirect(job.get_absolute_url(), permanent=True)
 
 
 def search_results(request):
