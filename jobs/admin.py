@@ -99,15 +99,25 @@ class ReviewAdmin(admin.ModelAdmin):
 
 @admin.register(TrendingTopic)
 class TrendingTopicAdmin(admin.ModelAdmin):
-    list_display = ('title', 'stat', 'icon', 'has_article', 'order', 'is_active', 'updated_at')
+    list_display = ('title', 'image_preview', 'stat', 'icon', 'has_article', 'order', 'is_active', 'updated_at')
     list_editable = ('order', 'is_active')
     list_filter = ('is_active',)
     search_fields = ('title', 'description', 'body', 'body2', 'body3', 'body4', 'body5')
     prepopulated_fields = {'slug': ('title',)}
 
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html(
+                '<img src="{}" style="height:36px;width:56px;'
+                'object-fit:cover;border-radius:6px;" />',
+                obj.image.url
+            )
+        return "—"
+    image_preview.short_description = "Image"
+
     fieldsets = (
         ('Homepage Card', {
-            'fields': ('title', 'description', 'stat', 'icon', 'order', 'is_active'),
+            'fields': ('title', 'description', 'stat', 'icon', 'image', 'order', 'is_active'),
             'description': 'Every entry shows as a short stat card on the homepage regardless of the fields below.',
         }),
         ('Full Article — Setup (optional)', {

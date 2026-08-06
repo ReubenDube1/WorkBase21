@@ -13,6 +13,11 @@
     <div class="article-grid">
       {% for article in page_obj %}
       <a href="{{ article.get_absolute_url }}" class="article-card fade-in">
+        {% if article.image %}
+        <div class="article-card-image">
+          <img src="{{ article.image.url }}" alt="{{ article.title }}" loading="lazy">
+        </div>
+        {% endif %}
         {% if article.icon %}<span class="article-card-icon">{{ article.icon }}</span>{% endif %}
         <h3>{{ article.title }}</h3>
         {% if article.description %}<p>{{ article.description }}</p>{% endif %}

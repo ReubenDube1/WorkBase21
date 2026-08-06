@@ -42,12 +42,19 @@
     <div class="trending-grid">
       {% for trend in trending_topics %}
       {% if trend.is_article %}<a href="{{ trend.get_absolute_url }}" class="trend-card fade-in">{% else %}<div class="trend-card fade-in">{% endif %}
-        {% if trend.icon %}<span class="trend-icon">{{ trend.icon }}</span>{% endif %}
-        <div>
-          <p class="trend-title">{{ trend.title }}</p>
-          {% if trend.description %}<p class="trend-desc">{{ trend.description }}</p>{% endif %}
-          {% if trend.stat %}<span class="trend-stat">{{ trend.stat }}</span>{% endif %}
-          {% if trend.is_article %}<span class="trend-read-more">Read article &rarr;</span>{% endif %}
+        {% if trend.image %}
+        <div class="trend-card-image">
+          <img src="{{ trend.image.url }}" alt="{{ trend.title }}" loading="lazy">
+        </div>
+        {% endif %}
+        <div class="trend-card-body">
+          {% if trend.icon %}<span class="trend-icon">{{ trend.icon }}</span>{% endif %}
+          <div>
+            <p class="trend-title">{{ trend.title }}</p>
+            {% if trend.description %}<p class="trend-desc">{{ trend.description }}</p>{% endif %}
+            {% if trend.stat %}<span class="trend-stat">{{ trend.stat }}</span>{% endif %}
+            {% if trend.is_article %}<span class="trend-read-more">Read article &rarr;</span>{% endif %}
+          </div>
         </div>
       {% if trend.is_article %}</a>{% else %}</div>{% endif %}
       {% endfor %}

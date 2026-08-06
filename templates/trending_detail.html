@@ -6,6 +6,11 @@
     <a href="{% url 'trending_list' %}" class="btn btn-back">&larr; Back to Resources</a>
 
     <article class="job-detail-card fade-in article-detail-card">
+      {% if article.image %}
+      <div class="job-detail-image article-detail-image">
+        <img src="{{ article.image.url }}" alt="{{ article.title }}">
+      </div>
+      {% endif %}
       <div class="article-detail-header">
         {% if article.icon %}<span class="article-detail-icon">{{ article.icon }}</span>{% endif %}
         <h1>{{ article.title }}</h1>
@@ -46,6 +51,11 @@
       <div class="article-grid">
         {% for related in related_articles %}
         <a href="{{ related.get_absolute_url }}" class="article-card">
+          {% if related.image %}
+          <div class="article-card-image">
+            <img src="{{ related.image.url }}" alt="{{ related.title }}" loading="lazy">
+          </div>
+          {% endif %}
           {% if related.icon %}<span class="article-card-icon">{{ related.icon }}</span>{% endif %}
           <h3>{{ related.title }}</h3>
           {% if related.description %}<p>{{ related.description }}</p>{% endif %}

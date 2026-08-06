@@ -230,6 +230,18 @@ class TrendingTopic(models.Model):
         help_text="An emoji to display, e.g. 💻 📈 🏥"
     )
 
+    image = models.ImageField(
+        upload_to='trending_images/',
+        blank=True,
+        null=True,
+        verbose_name="Featured Image",
+        help_text=(
+            "Optional. A simple picture upload — no rich text editor "
+            "needed. Shown on the homepage 'Trending' card and at the "
+            "top of the full article page, if one is published."
+        )
+    )
+
     body = RichTextUploadingField(
         "Article Body — Part 1",
         blank=True,
