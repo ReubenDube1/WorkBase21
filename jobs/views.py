@@ -9,13 +9,19 @@ from .forms import ContactForm
 
 JOBS_PER_PAGE = 9
 
+
+def _not_expired_q():
+    """Jobs count as 'still open' if their date hasn't passed yet, OR
+    they have no fixed date at all (e.g. 'Until filled' via
+    deadline_text) — those never auto-expire on their own."""
+    return Q(deadline__gte=timezone.localdate()) | Q(deadline__isnull=True)
+
 # Maps a URL-friendly slug to the value stored in Job.type,
 # plus the heading shown on that page. ('jobs' is handled separately
 # below since it now has its own Public/Private sector split.)
 TYPE_MAP = {
     'internships': {'value': Job.INTERNSHIP, 'title': 'Internships', 'blurb': 'Kick-start your career with hands-on experience.'},
     'learnerships': {'value': Job.LEARNERSHIP, 'title': 'Learnerships', 'blurb': 'Structured learning combined with real workplace experience.'},
-    'inservice': {'value': Job.INSERVICE, 'title': 'In-Service Trainee', 'blurb': 'Complete your practical training requirements.'},
     'bursaries': {'value': Job.BURSARY, 'title': 'Bursaries', 'blurb': 'Funding opportunities to help you study further.'},
 }
 
@@ -39,7 +45,7 @@ def _paginate(request, queryset, per_page=JOBS_PER_PAGE):
 
 def _active_jobs():
     return Job.objects.filter(
-        is_active=True, deadline__gte=timezone.localdate()
+        _not_expired_q(), is_active=True
     ).select_related('company')
 
 
@@ -51,8 +57,8 @@ def welcome(request):
         'page_obj': page_obj,
         'page_title': 'Find Your Next Opportunity',
         'meta_description': (
-            "Browse jobs, internships, learnerships, in-service trainee "
-            "positions and bursaries across South Africa on WorkBase21."
+            "Browse jobs, internships, learnerships and bursaries "
+            "across South Africa on WorkBase21."
         ),
         'trending_topics': TrendingTopic.objects.filter(is_active=True)[:6],
         'reviews': Review.objects.filter(is_published=True)[:6],
@@ -65,10 +71,10 @@ def jobs_sector_choice(request):
     Public Sector or Private Sector before seeing listings."""
     today = timezone.localdate()
     public_count = Job.objects.filter(
-        type=Job.JOB, sector=Job.PUBLIC, is_active=True, deadline__gte=today
+        _not_expired_q(), type=Job.JOB, sector=Job.PUBLIC, is_active=True
     ).count()
     private_count = Job.objects.filter(
-        type=Job.JOB, sector=Job.PRIVATE, is_active=True, deadline__gte=today
+        _not_expired_q(), type=Job.JOB, sector=Job.PRIVATE, is_active=True
     ).count()
     context = {
         'page_title': 'Jobs',
@@ -83,10 +89,10 @@ def job_list_by_sector(request, sector):
     """Listing page for Jobs filtered to Public Sector or Private Sector."""
     info = SECTOR_INFO[sector]
     jobs_qs = Job.objects.filter(
+        _not_expired_q(),
         type=Job.JOB,
         sector=sector,
         is_active=True,
-        deadline__gte=timezone.localdate(),
     ).select_related('company')
     page_obj = _paginate(request, jobs_qs)
     context = {
@@ -101,13 +107,12 @@ def job_list_by_sector(request, sector):
 
 
 def job_list_by_type(request, job_type):
-    """Shared view for Internships / Learnerships / In-Service / Bursaries
-    — each just filters on a different `type` value."""
+    """Shared view for Internships / Learnerships / Bursaries — each just filters on a different `type` value."""
     info = TYPE_MAP[job_type]
     jobs_qs = Job.objects.filter(
+        _not_expired_q(),
         type=info['value'],
         is_active=True,
-        deadline__gte=timezone.localdate(),
     ).select_related('company')
     page_obj = _paginate(request, jobs_qs)
     context = {
@@ -120,7 +125,6 @@ def job_list_by_type(request, job_type):
     template_map = {
         'internships': 'internships.html',
         'learnerships': 'learnerships.html',
-        'inservice': 'inservice.html',
         'bursaries': 'bursary.html',
     }
     return render(request, template_map[job_type], context)
@@ -137,7 +141,7 @@ def job_detail(request, pk, slug):
         return redirect(job.get_absolute_url(), permanent=True)
 
     related_jobs = Job.objects.filter(
-        type=job.type, is_active=True, deadline__gte=timezone.localdate()
+        _not_expired_q(), type=job.type, is_active=True
     ).exclude(pk=job.pk).select_related('company')[:4]
 
     context = {
@@ -146,7 +150,7 @@ def job_detail(request, pk, slug):
         'page_title': f"{job.title} at {job.company.name}",
         'meta_description': (
             f"{job.title} at {job.company.name} in {job.location}. "
-            f"Apply before {job.deadline:%d %b %Y} on WorkBase21."
+            f"Apply before {job.deadline_display} on WorkBase21."
         ),
     }
     return render(request, 'job_detail.html', context)
@@ -202,6 +206,7 @@ def trending_list(request):
     return render(request, 'trending_list.html', {
         'page_obj': page_obj,
         'page_title': 'Career Resources',
+        'active_type': 'trending_list',
         'meta_description': (
             'Career advice, CV tips, and guides to help South African '
             'job seekers navigate jobs, internships, learnerships and '
@@ -228,6 +233,7 @@ def trending_detail(request, slug):
         'article': article,
         'related_articles': related_articles,
         'page_title': article.title,
+        'active_type': 'trending_list',
         'meta_description': article.description or article.title,
     })
 

@@ -2,7 +2,7 @@
 
 A premium South African job portal built with Django 5, SQLite, pure CSS
 (no Bootstrap/Tailwind) and vanilla JavaScript. Lists Jobs, Internships,
-Learnerships, In-Service Trainee positions and Bursaries.
+Learnerships, and Bursaries.
 
 ---
 
@@ -75,8 +75,7 @@ python manage.py runserver
    (square images work best), and add the website URL.
 3. Under **Jobs**, click **Add**:
    - Pick the **Company**
-   - Choose the **Type**: Job / Internship / Learnership / In-Service
-     Trainee / Bursary
+   - Choose the **Type**: Job / Internship / Learnership / Bursary
    - Write the **Description** using the rich text editor (headings,
      bullet points, links all work)
    - Optionally fill in **Description Part 2** — this appears *below*
@@ -104,7 +103,7 @@ workbase21/
 │   ├── base.html
 │   ├── welcome.html
 │   ├── jobs.html / internships.html / learnerships.html /
-│   │   inservice.html / bursary.html
+│   │   bursary.html
 │   ├── job_detail.html
 │   ├── search.html
 │   ├── about.html / contact.html / privacy.html / terms.html

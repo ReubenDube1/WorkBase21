@@ -26,20 +26,17 @@ class Company(models.Model):
 
 
 class Job(models.Model):
-    """A single opportunity: job, internship, learnership, in-service
-    trainee position, or bursary."""
+    """A single opportunity: job, internship, learnership, or bursary."""
 
     JOB = 'job'
     INTERNSHIP = 'internship'
     LEARNERSHIP = 'learnership'
-    INSERVICE = 'inservice'
     BURSARY = 'bursary'
 
     TYPE_CHOICES = [
         (JOB, 'Job'),
         (INTERNSHIP, 'Internship'),
         (LEARNERSHIP, 'Learnership'),
-        (INSERVICE, 'In-Service Trainee'),
         (BURSARY, 'Bursary'),
     ]
 
@@ -99,11 +96,31 @@ class Job(models.Model):
         blank=True,
         help_text="e.g. R15,000 - R20,000 per month, or 'Market Related'"
     )
-    deadline = models.DateField()
+
+    deadline = models.DateField(
+        blank=True,
+        null=True,
+        help_text="Leave blank if there's no fixed date — use Deadline (text) below instead."
+    )
+    deadline_text = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Deadline (text)",
+        help_text=(
+            "Use this instead of a date when no specific deadline was "
+            "given, e.g. 'Until filled', 'Open until further notice', "
+            "'Ongoing applications'. If both are filled in, this text "
+            "is shown instead of the date."
+        )
+    )
 
     application_link = models.URLField(
         blank=True,
-        help_text="External link the Apply button opens in a new tab. Leave blank if applicants must apply by email instead."
+        help_text=(
+            "External link the Apply button opens in a new tab. Leave "
+            "blank if applicants must apply by email, or if you're using "
+            "Multiple Application Options below instead."
+        )
     )
     application_email = models.EmailField(
         blank=True,
@@ -135,11 +152,17 @@ class Job(models.Model):
 
     def clean(self):
         from django.core.exceptions import ValidationError
-        if not self.application_link and not self.application_email:
-            raise ValidationError(
-                "Provide either an Application Link or an Application "
-                "Email so job seekers know how to apply."
+        errors = {}
+        if not self.deadline and not self.deadline_text:
+            errors['deadline'] = (
+                "Provide either a Deadline date or Deadline (text) so "
+                "job seekers know when applications close."
             )
+        # Note: application_link/application_email are intentionally NOT
+        # required here anymore — a job posted with only Multiple
+        # Application Options (added below, after saving) is valid too.
+        if errors:
+            raise ValidationError(errors)
 
     @property
     def slug(self):
@@ -151,7 +174,21 @@ class Job(models.Model):
         return slugify(f"{self.title}-{self.company.name}")[:200]
 
     @property
+    def deadline_display(self):
+        """What to show job seekers — the free-text version takes
+        priority if both happen to be filled in."""
+        if self.deadline_text:
+            return self.deadline_text
+        if self.deadline:
+            return self.deadline.strftime('%d %b %Y')
+        return ''
+
+    @property
     def is_expired(self):
+        # A job with no fixed date (deadline_text only, e.g. "Until
+        # filled") never auto-expires — only a real date can do that.
+        if not self.deadline:
+            return False
         return self.deadline < timezone.localdate()
 
     @property
@@ -172,6 +209,38 @@ class Job(models.Model):
                 self.description4, self.description5,
             ] if block
         ]
+
+    @property
+    def has_multiple_application_links(self):
+        return self.application_links.exists()
+
+
+class JobApplicationLink(models.Model):
+    """One titled application link under a Job — for when a company
+    posts several positions at once under a single listing (e.g. an
+    internship intake with separate links per stream/department),
+    each with its own title and apply link."""
+
+    job = models.ForeignKey(
+        Job, on_delete=models.CASCADE, related_name='application_links'
+    )
+    title = models.CharField(
+        max_length=150,
+        help_text="e.g. 'Marketing Internship', 'Finance Internship — Cape Town'"
+    )
+    url = models.URLField(
+        verbose_name="Application Link",
+        help_text="Where this specific option's Apply button goes."
+    )
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
+        verbose_name = "Application Option"
+        verbose_name_plural = "Multiple Application Options"
+
+    def __str__(self):
+        return f"{self.title} ({self.job.title})"
 
 
 class Review(models.Model):

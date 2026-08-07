@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import RedirectView
 from . import views
 
 urlpatterns = [
@@ -9,8 +10,11 @@ urlpatterns = [
     path('jobs/private/', views.job_list_by_sector, {'sector': 'private'}, name='jobs_private'),
     path('internships/', views.job_list_by_type, {'job_type': 'internships'}, name='internships'),
     path('learnerships/', views.job_list_by_type, {'job_type': 'learnerships'}, name='learnerships'),
-    path('in-service-trainee/', views.job_list_by_type, {'job_type': 'inservice'}, name='inservice'),
     path('bursaries/', views.job_list_by_type, {'job_type': 'bursaries'}, name='bursaries'),
+
+    # In-Service Trainee was removed. Anyone with an old bookmarked or
+    # shared link is sent to Career Resources instead of hitting a 404.
+    path('in-service-trainee/', RedirectView.as_view(pattern_name='trending_list', permanent=True)),
 
     path('job/<int:pk>/<slug:slug>/', views.job_detail, name='job_detail'),
     path('job/<int:pk>/', views.job_detail_legacy_redirect, name='job_detail_legacy'),

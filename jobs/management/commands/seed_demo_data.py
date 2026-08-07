@@ -1,7 +1,7 @@
 import datetime
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from jobs.models import Company, Job, Review, TrendingTopic
+from jobs.models import Company, Job, JobApplicationLink, Review, TrendingTopic
 
 
 class Command(BaseCommand):
@@ -88,23 +88,23 @@ class Command(BaseCommand):
                 "apply": "link",
             },
             {
-                "title": "In-Service Trainee: Mechanical Engineering",
+                "title": "Graduate Trainee Programme — Multiple Streams",
                 "company": companies[3],
-                "type": Job.INSERVICE,
+                "type": Job.JOB,
                 "sector": Job.PRIVATE,
                 "location": "Gqeberha, Eastern Cape",
-                "salary": "R6,000 monthly stipend",
+                "salary": "R14,000 - R18,000 per month",
                 "days_ahead": 28,
-                "apply": "link",
+                "apply": "multi",
             },
             {
-                "title": "In-Service Trainee: Financial Accounting",
+                "title": "Continuous Intake Learnership",
                 "company": companies[2],
-                "type": Job.INSERVICE,
+                "type": Job.LEARNERSHIP,
                 "sector": Job.PRIVATE,
                 "location": "Bloemfontein, Free State",
                 "salary": "R6,500 monthly stipend",
-                "days_ahead": 18,
+                "deadline_text": "Until filled",
                 "apply": "email",
             },
             {
@@ -166,14 +166,31 @@ class Command(BaseCommand):
                 description5=description_parts[4],
                 location=item["location"],
                 salary=item["salary"],
-                deadline=today + datetime.timedelta(days=item["days_ahead"]),
             )
+            if item.get("deadline_text"):
+                kwargs["deadline_text"] = item["deadline_text"]
+            else:
+                kwargs["deadline"] = today + datetime.timedelta(days=item["days_ahead"])
+
             if item["apply"] == "email":
                 kwargs["application_email"] = "careers@example.com"
+            elif item["apply"] == "multi":
+                pass  # No single link/email — uses Multiple Application Options instead.
             else:
                 kwargs["application_link"] = "https://example.com/apply"
 
-            Job.objects.create(**kwargs)
+            job = Job.objects.create(**kwargs)
+
+            if item["apply"] == "multi":
+                JobApplicationLink.objects.create(
+                    job=job, title="Marketing Stream", url="https://example.com/apply/marketing", order=1
+                )
+                JobApplicationLink.objects.create(
+                    job=job, title="Finance Stream", url="https://example.com/apply/finance", order=2
+                )
+                JobApplicationLink.objects.create(
+                    job=job, title="Operations Stream", url="https://example.com/apply/operations", order=3
+                )
 
         # --- Sample reviews for the homepage ---
         reviews = [
@@ -259,7 +276,7 @@ class Command(BaseCommand):
                 ),
             },
             {
-                "title": "Learnerships vs Internships vs In-Service Training",
+                "title": "Learnerships vs Internships: What's the Difference?",
                 "description": "Understand the real differences before you apply, so you choose the right path.",
                 "icon": "🎓",
                 "order": 6,

@@ -9,7 +9,7 @@ def job_types(request):
             {'slug': 'jobs', 'label': 'Jobs'},
             {'slug': 'internships', 'label': 'Internships'},
             {'slug': 'learnerships', 'label': 'Learnerships'},
-            {'slug': 'inservice', 'label': 'In-Service Trainee'},
+            {'slug': 'trending_list', 'label': 'Career Resources'},
             {'slug': 'bursaries', 'label': 'Bursaries'},
         ],
         'SITE_NAME': settings.SITE_NAME,

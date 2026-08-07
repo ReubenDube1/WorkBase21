@@ -1,6 +1,14 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Company, Job, Review, TrendingTopic
+from django.urls import path
+from django.http import JsonResponse
+from .models import Company, Job, JobApplicationLink, Review, TrendingTopic
+
+
+class JobApplicationLinkInline(admin.TabularInline):
+    model = JobApplicationLink
+    extra = 1
+    fields = ('title', 'url', 'order')
 
 
 @admin.register(Company)
@@ -27,7 +35,7 @@ class CompanyAdmin(admin.ModelAdmin):
 class JobAdmin(admin.ModelAdmin):
     list_display = (
         'title', 'company', 'type', 'sector', 'location', 'salary',
-        'deadline', 'is_active', 'created_at',
+        'deadline_display', 'is_active', 'created_at',
     )
     list_filter = ('type', 'sector', 'is_active', 'company')
     search_fields = (
@@ -37,6 +45,9 @@ class JobAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     list_editable = ('is_active',)
     autocomplete_fields = ('company',)
+    inlines = [JobApplicationLinkInline]
+    class Media:
+        js = ('js/admin_insert_article_link.js',)
 
     fieldsets = (
         ('Basic Information', {
@@ -44,7 +55,13 @@ class JobAdmin(admin.ModelAdmin):
         }),
         ('Description Part 1', {
             'fields': ('description',),
-            'description': 'Shown first, above all advertisement blocks.',
+            'description': (
+                'Shown first, above all advertisement blocks. To link to '
+                'one of your Career Resources articles (e.g. the Z83 '
+                'guide) from within this text, click where you want the '
+                'link and use the "Insert Article Link" picker above the '
+                'toolbar.'
+            ),
         }),
         ('Description Part 2', {
             'fields': ('description2',),
@@ -67,14 +84,16 @@ class JobAdmin(admin.ModelAdmin):
             'description': 'Ad slot 4 appears between Part 4 and Part 5.',
         }),
         ('Details', {
-            'fields': ('location', 'salary', 'deadline')
+            'fields': ('location', 'salary', 'deadline', 'deadline_text')
         }),
-        ('How To Apply', {
+        ('How To Apply — Single Link/Email', {
             'fields': ('application_link', 'application_email'),
             'description': (
-                'Fill in EITHER the link OR the email — whichever one the '
-                'employer wants applicants to use. You can fill in both if '
-                'you want to show both options.'
+                'Use this for a normal single-position listing. Fill in '
+                'EITHER the link OR the email. If this company has '
+                'several positions open at once with different links '
+                '(e.g. separate internship streams), leave both of these '
+                'blank and use "Multiple Application Options" below instead.'
             ),
         }),
         ('Public Sector Documents', {
@@ -83,6 +102,36 @@ class JobAdmin(admin.ModelAdmin):
             'description': 'Only shown to job seekers when Sector is set to Public Sector.',
         }),
     )
+
+    def deadline_display(self, obj):
+        return obj.deadline_display or "—"
+    deadline_display.short_description = "Deadline"
+    deadline_display.admin_order_field = 'deadline'
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                'article-links.json',
+                self.admin_site.admin_view(self.article_links_json),
+                name='jobs_job_article_links',
+            ),
+        ]
+        return custom_urls + urls
+
+    def article_links_json(self, request):
+        """Powers the 'Insert Article Link' picker in the description
+        editors — returns every published article as {title, url} so
+        the admin can insert a link without leaving the page or
+        looking up the URL manually."""
+        articles = TrendingTopic.objects.filter(
+            is_active=True
+        ).exclude(body='').order_by('title')
+        data = [
+            {'title': a.title, 'url': a.get_absolute_url()}
+            for a in articles
+        ]
+        return JsonResponse(data, safe=False)
 
 admin.site.site_header = "WorkBase21 Administration"
 admin.site.site_title = "WorkBase21 Admin"
