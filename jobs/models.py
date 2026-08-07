@@ -135,7 +135,11 @@ class Job(models.Model):
         help_text="Upload the Z83 application form (PDF). Only shown for Public Sector jobs."
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        "Date Added",
+        default=timezone.now,
+        help_text="Defaults to right now, but you can set this to any date/time — useful for backdating a listing."
+    )
     is_active = models.BooleanField(
         default=True,
         help_text="Untick to hide this listing without deleting it."
@@ -348,7 +352,11 @@ class TrendingTopic(models.Model):
 
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        "Date Added",
+        default=timezone.now,
+        help_text="Defaults to right now, but you can set this to any date/time — useful for backdating an entry."
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

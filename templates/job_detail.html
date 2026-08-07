@@ -1,4 +1,9 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block og_image %}{% if job.company.logo %}https://{{ SITE_DOMAIN }}{{ job.company.logo.url }}{% elif job.image %}https://{{ SITE_DOMAIN }}{{ job.image.url }}{% else %}https://{{ SITE_DOMAIN }}{% static 'images/logo.png' %}{% endif %}{% endblock %}
+{% block twitter_image %}{% if job.company.logo %}https://{{ SITE_DOMAIN }}{{ job.company.logo.url }}{% elif job.image %}https://{{ SITE_DOMAIN }}{{ job.image.url }}{% else %}https://{{ SITE_DOMAIN }}{% static 'images/logo.png' %}{% endif %}{% endblock %}
+
 {% block content %}
 <section class="section job-detail">
   <div class="container job-detail-inner">
@@ -65,15 +70,6 @@
       {% with blocks=job.description_blocks %}
         {% for block in blocks %}
           <div class="job-detail-body">{{ block|safe }}</div>
-          {% if not forloop.last %}
-          <div class="ad-placeholder">
-            <span class="ad-label">Advertisement</span>
-            <div class="ad-box">
-              <p>Google AdSense Placeholder</p>
-              <span>728 &times; 90 Banner</span>
-            </div>
-          </div>
-          {% endif %}
         {% endfor %}
       {% endwith %}
 

@@ -51,7 +51,7 @@ class JobAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Basic Information', {
-            'fields': ('title', 'company', 'type', 'sector', 'is_active', 'image')
+            'fields': ('title', 'company', 'type', 'sector', 'is_active', 'image', 'created_at')
         }),
         ('Description Part 1', {
             'fields': ('description',),
@@ -166,7 +166,7 @@ class TrendingTopicAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Homepage Card', {
-            'fields': ('title', 'description', 'stat', 'icon', 'image', 'order', 'is_active'),
+            'fields': ('title', 'description', 'stat', 'icon', 'image', 'order', 'is_active', 'created_at'),
             'description': 'Every entry shows as a short stat card on the homepage regardless of the fields below.',
         }),
         ('Full Article — Setup (optional)', {

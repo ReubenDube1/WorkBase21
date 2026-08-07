@@ -17,13 +17,13 @@
 <meta property="og:description" content="{% block og_description %}{{ meta_description|default:SITE_DESCRIPTION }}{% endblock %}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://{{ SITE_DOMAIN }}{{ request.path }}">
-<meta property="og:image" content="https://{{ SITE_DOMAIN }}{% static 'images/logo.png' %}">
+<meta property="og:image" content="{% block og_image %}https://{{ SITE_DOMAIN }}{% static 'images/logo.png' %}{% endblock %}">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ page_title }} | {{ SITE_NAME }}">
 <meta name="twitter:description" content="{{ meta_description|default:SITE_DESCRIPTION }}">
-<meta name="twitter:image" content="https://{{ SITE_DOMAIN }}{% static 'images/logo.png' %}">
+<meta name="twitter:image" content="{% block twitter_image %}https://{{ SITE_DOMAIN }}{% static 'images/logo.png' %}{% endblock %}">
 
 <link rel="icon" href="{% static 'images/logo.png' %}">
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
