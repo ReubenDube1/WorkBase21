@@ -9,15 +9,43 @@
 
 <section class="section">
   <div class="container narrow-content fade-in">
-    <p>WorkBase21 is a job portal built for South African job seekers and employers. We bring together jobs, internships, learnerships, in-service trainee positions and bursaries in one clean, fast, and easy-to-use platform.</p>
 
-    <p>Whether you're a graduate looking for your first internship, a student searching for a bursary, or an experienced professional seeking your next role, WorkBase21 is designed to make the search simple and the process transparent.</p>
+    <p>WorkBase21 started with a simple frustration: finding a job, internship, learnership or bursary in South Africa means checking a dozen different websites, company career pages, and social media groups — and still missing opportunities that were never on your radar.</p>
+
+    <p>After spending months searching for internships and bursaries myself and losing track of deadlines across different sites, I decided to build the platform I wished existed — one place where every opportunity is easy to find, verified, and up to date.</p>
+
+    <p>Today, WorkBase21 brings together jobs, internships, learnerships and bursaries from across South Africa in one clean, fast, and easy-to-use platform — built for job seekers, not recruiters.</p>
 
     <h2>Our Mission</h2>
-    <p>To reduce the friction between talented people and the organisations that need them — with a platform that is fast, trustworthy, and genuinely useful for both sides of the market.</p>
+    <p>To reduce the friction between talented people and the organisations that need them, with a platform that is fast, trustworthy, and genuinely useful for both sides of the market.</p>
+
+    <p>We believe that:</p>
+    <ul>
+      <li>Finding an opportunity shouldn't require checking ten different websites.</li>
+      <li>Listings should be accurate, current, and easy to understand — no vague deadlines or missing details.</li>
+      <li>Job seekers deserve free access to career guidance, not just a database of listings.</li>
+    </ul>
+
+    <h2>Who We're For</h2>
+    <p><strong>Students and graduates</strong> looking for their first internship, learnership, or bursary to fund their studies.</p>
+    <p><strong>Early-career professionals</strong> searching for their next role or a structured programme to build experience.</p>
+    <p><strong>Experienced professionals</strong> looking for their next opportunity without wading through irrelevant listings.</p>
+
+    <h2>How We Work</h2>
+    <p>Every listing on WorkBase21 is reviewed before it's published. We link directly to the employer's or issuing organisation's own application process — we never ask you to pay to apply, and we never require you to submit sensitive personal information through our site. If you're ever unsure whether a listing is genuine, our <a href="{% url 'trending_detail' slug='how-to-verify-a-remote-job-before-you-apply' %}">guide to verifying opportunities</a> can help.</p>
+
+    <p>Alongside listings, our <a href="{% url 'trending_list' %}">Career Resources</a> section publishes original, practical guidance — CV writing, interview preparation, and honest takes on the South African job market — written for the realities job seekers actually face here.</p>
 
     <h2>For Employers</h2>
-    <p>WorkBase21 gives you a clean, professional way to reach motivated candidates across every stage of their career, from students seeking bursaries to experienced professionals ready for their next challenge.</p>
+    <p>WorkBase21 gives you a clean, professional way to reach motivated candidates across every stage of their career — from students seeking bursaries to experienced professionals ready for their next challenge.</p>
+    <p>If you'd like to list an opportunity with us, please get in touch via our <a href="{% url 'contact' %}">Contact page</a>.</p>
+
+    <h2>Who's Behind WorkBase21</h2>
+    <p>WorkBase21 is run by Reuben Mukwevho, based in Thohoyandou, Limpopo, South Africa. Reuben holds a BSc in Mathematical Sciences majoring in Statistics and Computer Science.</p>
+
+    <h2>Get in Touch</h2>
+    <p>Have a question, want to list an opportunity, or spot something that needs fixing? Reach out at <a href="mailto:{{ SITE_EMAIL }}">{{ SITE_EMAIL }}</a> or via our <a href="{% url 'contact' %}">Contact page</a>.</p>
+
   </div>
 </section>
 {% endblock %}

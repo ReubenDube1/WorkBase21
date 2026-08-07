@@ -192,9 +192,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Site info used in templates (SEO meta tags, footer, etc.)
 SITE_NAME = 'WorkBase21'
 SITE_DOMAIN = os.environ.get('SITE_DOMAIN', 'workbase21.co.za')
+SITE_EMAIL = os.environ.get('SITE_EMAIL', 'workbase21@gmail.com')
 SITE_DESCRIPTION = (
     'WorkBase21 connects South African job seekers with jobs, internships, '
-    'learnerships, in-service trainee positions and bursaries.'
+    'learnerships and bursaries.'
 )
 
 

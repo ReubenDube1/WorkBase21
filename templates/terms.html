@@ -3,29 +3,54 @@
 <section class="page-header">
   <div class="container">
     <h1>Terms &amp; Conditions</h1>
-    <p>Last updated: {% now "d M Y" %}</p>
+    <p>Last updated: 07 August 2026</p>
   </div>
 </section>
 
 <section class="section">
   <div class="container narrow-content fade-in">
-    <h2>1. Acceptance of Terms</h2>
-    <p>By accessing WorkBase21, you agree to be bound by these Terms &amp; Conditions. If you do not agree, please do not use the site.</p>
 
-    <h2>2. Use of Listings</h2>
-    <p>WorkBase21 aggregates and displays job, internship, learnership, in-service trainee, and bursary listings for informational purposes. We do not guarantee the accuracy, completeness, or availability of any listing, and are not a party to any employment or funding relationship formed as a result of a listing.</p>
+    <h2>1. Acceptance of Terms</h2>
+    <p>By accessing or using WorkBase21 ("the Site"), you agree to be bound by these Terms and Conditions and our Privacy Policy. If you do not agree, please do not use the Site.</p>
+
+    <h2>2. About Our Service</h2>
+    <p>WorkBase21 aggregates and displays job, internship, learnership, and bursary listings for informational purposes. We are not an employer, recruitment agency, or funding body for the opportunities listed, and we are not a party to any employment, internship, or funding relationship that may result from a listing.</p>
+
+    <p>We do not guarantee the accuracy, completeness, availability, or legitimacy of any listing. Where possible we verify listings before publishing, but opportunities can change or be removed by the issuing organisation without notice. Always exercise your own judgement, and refer to our <a href="{% url 'trending_detail' slug='how-to-verify-a-remote-job-before-you-apply' %}">guide on verifying opportunities</a> before sharing personal or financial information with any employer.</p>
 
     <h2>3. Applications</h2>
-    <p>Clicking "Apply Now" directs you to an external application process managed by the employer or issuing organisation. WorkBase21 is not responsible for the outcome of any application.</p>
+    <p>Clicking "Apply Now" or similar links directs you to an external application process managed by the employer or issuing organisation. WorkBase21 is not responsible for that process, its outcome, or any communication you have with the employer.</p>
 
-    <h2>4. Intellectual Property</h2>
-    <p>All WorkBase21 branding, design, and original content are the property of WorkBase21 and may not be copied or reused without permission.</p>
+    <h2>4. Acceptable Use</h2>
+    <p>When using the Site, you agree not to:</p>
+    <ul>
+      <li>Use the Site for any unlawful purpose or in a way that violates any applicable law.</li>
+      <li>Attempt to scrape, copy, or republish listings or content in bulk without our permission.</li>
+      <li>Interfere with the security or normal operation of the Site.</li>
+      <li>Submit false, misleading, or fraudulent information through our contact forms.</li>
+    </ul>
 
-    <h2>5. Limitation of Liability</h2>
-    <p>WorkBase21 is provided "as is" without warranties of any kind. We are not liable for any loss or damage arising from use of the site or reliance on listed information.</p>
+    <h2>5. Advertising</h2>
+    <p>The Site displays advertisements served by third-party providers, including Google AdSense. We do not control the content of these advertisements and are not responsible for the products, services, or claims made by advertisers. Interactions with advertisements are between you and the advertiser.</p>
 
-    <h2>6. Changes to These Terms</h2>
-    <p>We may update these Terms &amp; Conditions from time to time. Continued use of the site after changes constitutes acceptance of the updated terms.</p>
+    <h2>6. Intellectual Property</h2>
+    <p>All WorkBase21 branding, design, and original written content (including articles in our Career Resources section) are the property of WorkBase21 and may not be copied, republished, or reused without our prior written permission. Employer names, logos, and job descriptions remain the property of their respective owners.</p>
+
+    <h2>7. Limitation of Liability</h2>
+    <p>The Site is provided "as is" and "as available," without warranties of any kind, express or implied. To the fullest extent permitted by law, WorkBase21 is not liable for any direct, indirect, incidental, or consequential loss or damage arising from your use of the Site, reliance on listed information, or interactions with third parties (including employers and advertisers) encountered through the Site.</p>
+
+    <h2>8. Governing Law</h2>
+    <p>These Terms and Conditions are governed by the laws of the Republic of South Africa. Any disputes arising from your use of the Site will be subject to the jurisdiction of the South African courts.</p>
+
+    <h2>9. Severability</h2>
+    <p>If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions will continue in full force and effect.</p>
+
+    <h2>10. Changes to These Terms</h2>
+    <p>We may update these Terms and Conditions from time to time. The "Last updated" date at the top of this page reflects the most recent revision. Continued use of the Site after changes constitutes acceptance of the updated Terms.</p>
+
+    <h2>11. Contact Us</h2>
+    <p>Questions about these Terms can be sent to <a href="mailto:{{ SITE_EMAIL }}">{{ SITE_EMAIL }}</a> or via our <a href="{% url 'contact' %}">Contact page</a>.</p>
+
   </div>
 </section>
 {% endblock %}

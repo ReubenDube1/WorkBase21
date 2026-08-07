@@ -14,5 +14,6 @@ def job_types(request):
         ],
         'SITE_NAME': settings.SITE_NAME,
         'SITE_DOMAIN': settings.SITE_DOMAIN,
+        'SITE_EMAIL': settings.SITE_EMAIL,
         'SITE_DESCRIPTION': settings.SITE_DESCRIPTION,
     }
