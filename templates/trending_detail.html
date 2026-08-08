@@ -20,7 +20,7 @@
       <div class="article-detail-header">
         {% if article.icon %}<span class="article-detail-icon">{{ article.icon }}</span>{% endif %}
         <h1>{{ article.title }}</h1>
-        <p class="article-detail-meta">By {{ article.author_name }} &middot; Updated {{ article.updated_at|date:"d M Y" }}</p>
+        <p class="article-detail-meta">By {{ article.author_name }} &middot; Published {{ article.created_at|date:"d M Y" }}</p>
       </div>
 
       {% for block in article.body_blocks %}
@@ -65,7 +65,7 @@
           {% if related.icon %}<span class="article-card-icon">{{ related.icon }}</span>{% endif %}
           <h3>{{ related.title }}</h3>
           {% if related.description %}<p>{{ related.description }}</p>{% endif %}
-          <span class="article-card-meta">{{ related.updated_at|date:"d M Y" }}</span>
+          <span class="article-card-meta">{{ related.created_at|date:"d M Y" }}</span>
         </a>
         {% endfor %}
       </div>

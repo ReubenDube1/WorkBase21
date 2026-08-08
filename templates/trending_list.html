@@ -21,7 +21,7 @@
         {% if article.icon %}<span class="article-card-icon">{{ article.icon }}</span>{% endif %}
         <h3>{{ article.title }}</h3>
         {% if article.description %}<p>{{ article.description }}</p>{% endif %}
-        <span class="article-card-meta">{{ article.updated_at|date:"d M Y" }} &middot; {{ article.author_name }}</span>
+        <span class="article-card-meta">{{ article.created_at|date:"d M Y" }} &middot; {{ article.author_name }}</span>
       </a>
       {% endfor %}
     </div>

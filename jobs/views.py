@@ -201,7 +201,7 @@ def trending_list(request):
     has a full article body, newest first."""
     articles = TrendingTopic.objects.filter(
         is_active=True
-    ).exclude(body='').order_by('-updated_at')
+    ).exclude(body='').order_by('-created_at')
     page_obj = _paginate(request, articles, per_page=9)
     return render(request, 'trending_list.html', {
         'page_obj': page_obj,
@@ -227,7 +227,7 @@ def trending_detail(request, slug):
 
     related_articles = TrendingTopic.objects.filter(
         is_active=True
-    ).exclude(pk=article.pk).exclude(body='').order_by('-updated_at')[:3]
+    ).exclude(pk=article.pk).exclude(body='').order_by('-created_at')[:3]
 
     return render(request, 'trending_detail.html', {
         'article': article,
