@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{% block title %}{{ page_title }} | {{ SITE_NAME }}{% endblock %}</title>
 
+
 <!-- SEO -->
 <meta name="description" content="{% block meta_description %}{{ meta_description|default:SITE_DESCRIPTION }}{% endblock %}">
 <meta name="robots" content="index, follow">
@@ -28,6 +29,12 @@
 <link rel="icon" href="{% static 'images/logo.png' %}">
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1588690618371844"
+     crossorigin="anonymous"></script>
+
 {% block extra_head %}{% endblock %}
 </head>
 <body>
