@@ -6,9 +6,12 @@ from django.urls import path, re_path, include
 from django.conf import settings
 from django.views.static import serve as static_serve
 
+from jobs.views import ads_txt
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('ckeditor/', include('ckeditor_uploader.urls')),
+    path('ads.txt', ads_txt, name='ads_txt'),
     path('', include('jobs.urls')),
 ]
 

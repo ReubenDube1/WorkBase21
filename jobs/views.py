@@ -274,3 +274,18 @@ def custom_404(request, exception=None):
     return render(request, '404.html', {
         'page_title': 'Page Not Found',
     }, status=404)
+
+
+def ads_txt(request):
+    """
+    Serve /ads.txt for Google AdSense verification.
+
+    Served via a Django view (instead of relying on the static files
+    pipeline) so it's guaranteed to be reachable at the site root
+    regardless of STATIC_URL, whitenoise config, or collectstatic
+    timing on Render.
+    """
+    from django.http import HttpResponse
+
+    content = "google.com, pub-1588690618371844, DIRECT, f08c47fec0942fa0\n"
+    return HttpResponse(content, content_type="text/plain")
