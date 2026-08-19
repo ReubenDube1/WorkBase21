@@ -13,7 +13,7 @@ urlpatterns = [
     path('bursaries/', views.job_list_by_type, {'job_type': 'bursaries'}, name='bursaries'),
 
     # In-Service Trainee was removed. Anyone with an old bookmarked or
-    # shared link is sent to Career Resources instead of hitting a 404.
+    # shared link is sent to the Blog instead of hitting a 404.
     path('in-service-trainee/', RedirectView.as_view(pattern_name='trending_list', permanent=True)),
 
     path('job/<int:pk>/<slug:slug>/', views.job_detail, name='job_detail'),

@@ -28,7 +28,7 @@
       <h2>Latest Opportunities</h2>
       <p>Freshly posted listings from trusted employers.</p>
     </div>
-    {% include "partials/_job_grid.html" %}
+    {% include "partials/_job_grid_home.html" %}
   </div>
 </section>
 
@@ -37,7 +37,7 @@
   <div class="container">
     <div class="section-heading">
       <h2>What's Trending in the Job Market</h2>
-      <p>A quick pulse on where the opportunities are moving. <a href="{% url 'trending_list' %}">Read our career resources &rarr;</a></p>
+      <p>A quick pulse on where the opportunities are moving. <a href="{% url 'trending_list' %}">Read our blog &rarr;</a></p>
     </div>
     <div class="trending-grid">
       {% for trend in trending_topics %}
@@ -58,6 +58,9 @@
         </div>
       {% if trend.is_article %}</a>{% else %}</div>{% endif %}
       {% endfor %}
+    </div>
+    <div class="section-cta">
+      <a href="{% url 'trending_list' %}" class="btn btn-outline btn-lg">Show More</a>
     </div>
   </div>
 </section>

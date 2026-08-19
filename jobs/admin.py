@@ -57,7 +57,7 @@ class JobAdmin(admin.ModelAdmin):
             'fields': ('description',),
             'description': (
                 'Shown first, above all advertisement blocks. To link to '
-                'one of your Career Resources articles (e.g. the Z83 '
+                'one of your Blog articles (e.g. the Z83 '
                 'guide) from within this text, click where you want the '
                 'link and use the "Insert Article Link" picker above the '
                 'toolbar.'

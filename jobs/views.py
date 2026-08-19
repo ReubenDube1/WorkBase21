@@ -9,6 +9,8 @@ from .models import Job, Review, TrendingTopic
 from .forms import ContactForm
 
 JOBS_PER_PAGE = 9
+HOMEPAGE_JOBS_LIMIT = 16
+HOMEPAGE_ARTICLES_LIMIT = 16
 
 
 def _not_expired_q():
@@ -53,15 +55,14 @@ def _active_jobs():
 def welcome(request):
     """Home page: hero search bar, latest listings, trending topics and
     reviews from job seekers / partner organisations."""
-    page_obj = _paginate(request, _active_jobs())
     context = {
-        'page_obj': page_obj,
+        'home_jobs': _active_jobs()[:HOMEPAGE_JOBS_LIMIT],
         'page_title': 'Find Your Next Opportunity',
         'meta_description': (
             "Browse jobs, internships, learnerships and bursaries "
             "across South Africa on WorkBase21."
         ),
-        'trending_topics': TrendingTopic.objects.filter(is_active=True)[:6],
+        'trending_topics': TrendingTopic.objects.filter(is_active=True)[:HOMEPAGE_ARTICLES_LIMIT],
         'reviews': Review.objects.filter(is_published=True)[:6],
     }
     return render(request, 'welcome.html', context)
@@ -206,7 +207,7 @@ def trending_list(request):
     page_obj = _paginate(request, articles, per_page=9)
     return render(request, 'trending_list.html', {
         'page_obj': page_obj,
-        'page_title': 'Career Resources',
+        'page_title': 'Blog',
         'active_type': 'trending_list',
         'meta_description': (
             'Career advice, CV tips, and guides to help South African '

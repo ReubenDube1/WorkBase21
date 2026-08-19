@@ -71,6 +71,8 @@ h1, h2, h3, h4 {
 .section-heading h2 { font-size: 2rem; margin-bottom: 8px; }
 .section-heading p { color: var(--text-grey); }
 
+.section-cta { text-align: center; margin-top: 36px; }
+
 .narrow-content { max-width: 780px; }
 .narrow-content h2 { margin-top: 32px; margin-bottom: 12px; font-size: 1.4rem; }
 .narrow-content p { color: var(--text-grey); margin-bottom: 4px; }
@@ -839,7 +841,7 @@ h1, h2, h3, h4 {
 .section-alt { background: #F1F5F9; }
 
 /* ==========================================================================
-   Career Resources / Articles
+   Blog / Articles
    ========================================================================== */
 .trend-read-more {
   display: inline-block;
