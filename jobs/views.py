@@ -3,6 +3,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib import messages
 from django.utils import timezone
+from django.conf import settings
 
 from .models import Job, Review, TrendingTopic
 from .forms import ContactForm
@@ -289,3 +290,22 @@ def ads_txt(request):
 
     content = "google.com, pub-1588690618371844, DIRECT, f08c47fec0942fa0\n"
     return HttpResponse(content, content_type="text/plain")
+
+
+def robots_txt(request):
+    """
+    Serve /robots.txt — allows crawling everywhere except the admin
+    and CKEditor upload endpoints, and points crawlers at the sitemap
+    so new/updated jobs and articles get discovered and indexed.
+    """
+    from django.http import HttpResponse
+
+    lines = [
+        "User-agent: *",
+        "Disallow: /admin/",
+        "Disallow: /ckeditor/",
+        "Allow: /",
+        "",
+        f"Sitemap: https://{settings.SITE_DOMAIN}/sitemap.xml",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")

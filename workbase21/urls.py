@@ -5,13 +5,23 @@ from django.contrib import admin
 from django.urls import path, re_path, include
 from django.conf import settings
 from django.views.static import serve as static_serve
+from django.contrib.sitemaps.views import sitemap
 
-from jobs.views import ads_txt
+from jobs.views import ads_txt, robots_txt
+from jobs.sitemaps import JobSitemap, ArticleSitemap, StaticViewSitemap
+
+sitemaps = {
+    'jobs': JobSitemap,
+    'articles': ArticleSitemap,
+    'static': StaticViewSitemap,
+}
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('ads.txt', ads_txt, name='ads_txt'),
+    path('robots.txt', robots_txt, name='robots_txt'),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
     path('', include('jobs.urls')),
 ]
 
