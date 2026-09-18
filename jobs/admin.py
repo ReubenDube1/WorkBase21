@@ -1,8 +1,10 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from django.urls import path
+from django.urls import path, reverse
+from django.utils.safestring import mark_safe
 from django.http import JsonResponse
-from .models import Company, Job, JobApplicationLink, Review, TrendingTopic
+from django.db.models import Count
+from .models import Company, Job, JobApplicationLink, Review, TrendingTopic, PageVisit
 
 
 class JobApplicationLinkInline(admin.TabularInline):
@@ -35,7 +37,7 @@ class CompanyAdmin(admin.ModelAdmin):
 class JobAdmin(admin.ModelAdmin):
     list_display = (
         'title', 'company', 'type', 'sector', 'location', 'salary',
-        'deadline_display', 'is_active', 'created_at',
+        'deadline_display', 'views_display', 'is_active', 'created_at',
     )
     list_filter = ('type', 'sector', 'is_active', 'company')
     search_fields = (
@@ -48,6 +50,19 @@ class JobAdmin(admin.ModelAdmin):
     inlines = [JobApplicationLinkInline]
     class Media:
         js = ('js/admin_insert_article_link.js',)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(
+            _viewer_count=Count('page_visits__session_key', distinct=True)
+        )
+
+    def views_display(self, obj):
+        url = reverse('admin_analytics') + f'#job-{obj.pk}'
+        return mark_safe(
+            f'<a href="{url}" title="See full analytics">{obj._viewer_count}</a>'
+        )
+    views_display.short_description = "Views"
+    views_display.admin_order_field = '_viewer_count'
 
     fieldsets = (
         ('Basic Information', {
@@ -144,6 +159,24 @@ class ReviewAdmin(admin.ModelAdmin):
     list_filter = ('is_published', 'rating')
     search_fields = ('name', 'role', 'message')
     list_editable = ('is_published',)
+
+
+@admin.register(PageVisit)
+class PageVisitAdmin(admin.ModelAdmin):
+    """Read-only log of raw page visits — mainly for spot-checking.
+    For the aggregated numbers (totals, unique visitors, most-viewed
+    jobs, trends over time), use the Site Analytics dashboard linked
+    at the top of the admin home page instead."""
+    list_display = ('path', 'job', 'session_key', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('path', 'session_key')
+    date_hierarchy = 'created_at'
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(TrendingTopic)

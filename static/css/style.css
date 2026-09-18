@@ -196,6 +196,21 @@ h1, h2, h3, h4 {
 .nav-search button { background: none; border: none; color: var(--text-grey); cursor: pointer; display: flex; }
 .nav-search button:hover { color: var(--primary); }
 
+.mic-btn { position: relative; }
+.mic-btn.listening { color: #DC2626; }
+.mic-btn.listening::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, 0.15);
+  animation: mic-pulse 1.2s ease-out infinite;
+}
+@keyframes mic-pulse {
+  0% { transform: scale(0.6); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
 .hamburger {
   display: none;
   flex-direction: column;
@@ -269,6 +284,16 @@ h1, h2, h3, h4 {
   background: transparent;
 }
 .hero-search .btn { flex-shrink: 0; }
+.hero-search .mic-btn {
+  background: none;
+  border: none;
+  color: var(--text-grey);
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  padding: 4px;
+}
+.hero-search .mic-btn:hover { color: var(--primary); }
 
 .hero-tags {
   display: flex;
@@ -315,6 +340,8 @@ h1, h2, h3, h4 {
 }
 
 .job-card {
+  position: relative;
+  overflow: hidden;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -323,6 +350,21 @@ h1, h2, h3, h4 {
   flex-direction: column;
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+.expired-ribbon {
+  position: absolute;
+  top: 14px;
+  right: -30px;
+  background: #DC2626;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 32px;
+  transform: rotate(40deg);
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35);
+  pointer-events: none;
 }
 .job-card:hover {
   transform: translateY(-6px);
@@ -380,6 +422,7 @@ h1, h2, h3, h4 {
 .job-type-learnership { background: rgba(34, 197, 94, 0.12); color: #15803D; }
 .job-type-inservice { background: rgba(234, 179, 8, 0.15); color: #A16207; }
 .job-type-bursary { background: rgba(168, 85, 247, 0.12); color: #7E22CE; }
+.job-type-expired { background: rgba(220, 38, 38, 0.12); color: #DC2626; }
 
 .job-card-title { font-size: 1.1rem; margin-bottom: 4px; }
 .job-card-company { color: var(--text-grey); font-size: 0.9rem; margin-bottom: 16px; }

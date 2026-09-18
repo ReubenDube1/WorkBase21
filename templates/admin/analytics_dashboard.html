@@ -1,0 +1,136 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+  &rsaquo; Site Analytics
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+  .wb21-stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .wb21-stat-card { background: var(--body-bg, #fff); border: 1px solid var(--border-color, #ccc); border-radius: 6px; padding: 16px 18px; }
+  .wb21-stat-card h3 { margin: 0 0 4px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--body-quiet-color, #666); font-weight: 600; }
+  .wb21-stat-card .wb21-big { font-size: 1.9rem; font-weight: 700; line-height: 1.1; }
+  .wb21-stat-card .wb21-sub { font-size: 0.82rem; color: var(--body-quiet-color, #666); margin-top: 2px; }
+  .wb21-section { margin-bottom: 32px; }
+  .wb21-section h2 { font-size: 1.05rem; margin-bottom: 10px; }
+  .wb21-bars { display: flex; align-items: flex-end; gap: 6px; height: 140px; padding: 8px 4px; border: 1px solid var(--border-color, #ccc); border-radius: 6px; background: var(--body-bg, #fff); }
+  .wb21-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+  .wb21-bar { width: 70%; background: var(--primary, #417690); border-radius: 3px 3px 0 0; min-height: 2px; }
+  .wb21-bar-label { font-size: 0.62rem; color: var(--body-quiet-color, #666); margin-top: 4px; white-space: nowrap; transform: rotate(0deg); }
+  .wb21-bar-count { font-size: 0.68rem; font-weight: 600; margin-bottom: 2px; }
+  table.wb21-table { width: 100%; border-collapse: collapse; }
+  table.wb21-table th, table.wb21-table td { padding: 8px 10px; border-bottom: 1px solid var(--border-color, #eee); text-align: left; font-size: 0.88rem; }
+  table.wb21-table th { color: var(--body-quiet-color, #666); font-weight: 600; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.03em; }
+  .wb21-empty { color: var(--body-quiet-color, #888); padding: 12px 0; }
+</style>
+
+<h1>Site Analytics</h1>
+<p class="wb21-sub" style="margin-bottom:20px;">No IP addresses are stored — visit counts use the anonymous session Django already assigns each browser.</p>
+
+<div class="wb21-stat-grid">
+  <div class="wb21-stat-card">
+    <h3>Total Site Visits</h3>
+    <div class="wb21-big">{{ total_visits }}</div>
+    <div class="wb21-sub">{{ total_unique_visitors }} unique visitor{{ total_unique_visitors|pluralize }}, all time</div>
+  </div>
+  <div class="wb21-stat-card">
+    <h3>Today</h3>
+    <div class="wb21-big">{{ visits_today }}</div>
+    <div class="wb21-sub">{{ visitors_today }} visitor{{ visitors_today|pluralize }}</div>
+  </div>
+  <div class="wb21-stat-card">
+    <h3>Last 7 Days</h3>
+    <div class="wb21-big">{{ visits_week }}</div>
+    <div class="wb21-sub">{{ visitors_week }} visitor{{ visitors_week|pluralize }}</div>
+  </div>
+  <div class="wb21-stat-card">
+    <h3>Last 30 Days</h3>
+    <div class="wb21-big">{{ visits_month }}</div>
+    <div class="wb21-sub">{{ visitors_month }} visitor{{ visitors_month|pluralize }}</div>
+  </div>
+</div>
+
+<div class="wb21-section">
+  <h2>Visits — Last 14 Days</h2>
+  <div class="wb21-bars">
+    {% for row in daily_breakdown %}
+    <div class="wb21-bar-col">
+      <span class="wb21-bar-count">{{ row.count }}</span>
+      <div class="wb21-bar" style="height: {{ row.pct }}%;"></div>
+      <span class="wb21-bar-label">{{ row.label }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="wb21-section">
+  <h2>Most-Viewed Jobs</h2>
+  {% if top_jobs %}
+  <table class="wb21-table">
+    <thead>
+      <tr><th>Job</th><th>Company</th><th>Unique Viewers</th><th>Total Opens</th></tr>
+    </thead>
+    <tbody>
+      {% for job in top_jobs %}
+      <tr>
+        <td><a href="{% url 'admin:jobs_job_change' job.pk %}">{{ job.title }}</a></td>
+        <td>{{ job.company.name }}</td>
+        <td>{{ job.visitor_count }}</td>
+        <td>{{ job.hit_count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="wb21-empty">No job views recorded yet.</p>
+  {% endif %}
+</div>
+
+<div class="wb21-section">
+  <h2>Most-Visited Pages (non-job)</h2>
+  {% if top_pages %}
+  <table class="wb21-table">
+    <thead>
+      <tr><th>Page</th><th>Visitors</th><th>Hits</th></tr>
+    </thead>
+    <tbody>
+      {% for page in top_pages %}
+      <tr>
+        <td>{{ page.path }}</td>
+        <td>{{ page.visitor_count }}</td>
+        <td>{{ page.hit_count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="wb21-empty">No page visits recorded yet.</p>
+  {% endif %}
+</div>
+
+<div class="wb21-section">
+  <h2>Recent Visits</h2>
+  {% if recent_visits %}
+  <table class="wb21-table">
+    <thead>
+      <tr><th>Page</th><th>Job</th><th>When</th></tr>
+    </thead>
+    <tbody>
+      {% for visit in recent_visits %}
+      <tr>
+        <td>{{ visit.path }}</td>
+        <td>{% if visit.job %}{{ visit.job.title }}{% else %}—{% endif %}</td>
+        <td>{{ visit.created_at|date:"d M Y, H:i" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="wb21-empty">No visits recorded yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

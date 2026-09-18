@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Case, When, Value, BooleanField
 from django.contrib import messages
 from django.utils import timezone
 from django.conf import settings
@@ -13,10 +13,28 @@ HOMEPAGE_JOBS_LIMIT = 16
 HOMEPAGE_ARTICLES_LIMIT = 16
 
 
+def _with_expired_flag(queryset):
+    """Annotates a Job queryset with `_expired` and orders live listings
+    first, newest first within each group.
+
+    Listings are kept visible after their deadline passes instead of
+    disappearing — this keeps the site's page count and content depth
+    up (helpful for search engines and ad review) while still making
+    it obvious to job seekers, via the 'Expired' styling already in
+    the templates, which listings are still open."""
+    return queryset.annotate(
+        _expired=Case(
+            When(deadline__lt=timezone.localdate(), then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField(),
+        )
+    ).order_by('_expired', '-created_at')
+
+
 def _not_expired_q():
-    """Jobs count as 'still open' if their date hasn't passed yet, OR
-    they have no fixed date at all (e.g. 'Until filled' via
-    deadline_text) — those never auto-expire on their own."""
+    """Used only for the 'X open listings' counts on the sector-choice
+    page — those should reflect what's still open, even though the
+    listing pages themselves now also show expired jobs."""
     return Q(deadline__gte=timezone.localdate()) | Q(deadline__isnull=True)
 
 # Maps a URL-friendly slug to the value stored in Job.type,
@@ -47,9 +65,12 @@ def _paginate(request, queryset, per_page=JOBS_PER_PAGE):
 
 
 def _active_jobs():
-    return Job.objects.filter(
-        _not_expired_q(), is_active=True
-    ).select_related('company')
+    """Every published listing, expired or not — is_active is the
+    admin's manual publish/unpublish toggle and is respected; a job's
+    deadline having passed no longer hides it from the site."""
+    return _with_expired_flag(
+        Job.objects.filter(is_active=True).select_related('company')
+    )
 
 
 def welcome(request):
@@ -90,12 +111,11 @@ def jobs_sector_choice(request):
 def job_list_by_sector(request, sector):
     """Listing page for Jobs filtered to Public Sector or Private Sector."""
     info = SECTOR_INFO[sector]
-    jobs_qs = Job.objects.filter(
-        _not_expired_q(),
-        type=Job.JOB,
-        sector=sector,
-        is_active=True,
-    ).select_related('company')
+    jobs_qs = _with_expired_flag(
+        Job.objects.filter(
+            type=Job.JOB, sector=sector, is_active=True,
+        ).select_related('company')
+    )
     page_obj = _paginate(request, jobs_qs)
     context = {
         'page_obj': page_obj,
@@ -111,11 +131,11 @@ def job_list_by_sector(request, sector):
 def job_list_by_type(request, job_type):
     """Shared view for Internships / Learnerships / Bursaries — each just filters on a different `type` value."""
     info = TYPE_MAP[job_type]
-    jobs_qs = Job.objects.filter(
-        _not_expired_q(),
-        type=info['value'],
-        is_active=True,
-    ).select_related('company')
+    jobs_qs = _with_expired_flag(
+        Job.objects.filter(
+            type=info['value'], is_active=True,
+        ).select_related('company')
+    )
     page_obj = _paginate(request, jobs_qs)
     context = {
         'page_obj': page_obj,
@@ -142,9 +162,10 @@ def job_detail(request, pk, slug):
     if slug != job.slug:
         return redirect(job.get_absolute_url(), permanent=True)
 
-    related_jobs = Job.objects.filter(
-        _not_expired_q(), type=job.type, is_active=True
-    ).exclude(pk=job.pk).select_related('company')[:4]
+    related_jobs = _with_expired_flag(
+        Job.objects.filter(type=job.type, is_active=True)
+        .exclude(pk=job.pk).select_related('company')
+    )[:4]
 
     context = {
         'job': job,
@@ -171,14 +192,16 @@ def search_results(request):
     jobs_qs = Job.objects.none()
 
     if query:
-        jobs_qs = Job.objects.filter(
-            Q(title__icontains=query) |
-            Q(description__icontains=query) |
-            Q(company__name__icontains=query) |
-            Q(location__icontains=query) |
-            Q(type__icontains=query),
-            is_active=True,
-        ).select_related('company').distinct()
+        jobs_qs = _with_expired_flag(
+            Job.objects.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query) |
+                Q(company__name__icontains=query) |
+                Q(location__icontains=query) |
+                Q(type__icontains=query),
+                is_active=True,
+            ).select_related('company').distinct()
+        )
 
     page_obj = _paginate(request, jobs_qs)
     context = {

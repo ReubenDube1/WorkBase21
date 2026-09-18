@@ -396,3 +396,30 @@ class TrendingTopic(models.Model):
                 self.body, self.body2, self.body3, self.body4, self.body5,
             ] if block
         ]
+
+
+class PageVisit(models.Model):
+    """One logged page view, written by VisitTrackingMiddleware for every
+    real page request (static/media/admin/ckeditor excluded). Powers the
+    'Site Visits' analytics screen in the admin — total visits, unique
+    visitors, busiest pages, and traffic over time.
+
+    Kept deliberately minimal for privacy: no IP addresses are stored,
+    just the anonymous session key Django already issues."""
+
+    path = models.CharField(max_length=500, db_index=True)
+    session_key = models.CharField(max_length=40, blank=True, db_index=True)
+    job = models.ForeignKey(
+        Job, on_delete=models.SET_NULL, blank=True, null=True,
+        related_name='page_visits',
+        help_text="Set automatically when the visited page was a job detail page."
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Site Visit"
+        verbose_name_plural = "Site Visits"
+
+    def __str__(self):
+        return f"{self.path} @ {self.created_at:%Y-%m-%d %H:%M}"

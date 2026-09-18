@@ -9,6 +9,7 @@ from django.contrib.sitemaps.views import sitemap
 
 from jobs.views import ads_txt, robots_txt
 from jobs.sitemaps import JobSitemap, ArticleSitemap, StaticViewSitemap
+from jobs.admin_views import analytics_dashboard
 
 sitemaps = {
     'jobs': JobSitemap,
@@ -17,6 +18,10 @@ sitemaps = {
 }
 
 urlpatterns = [
+    # Must come before the admin.site.urls include below so this exact
+    # path is matched first — the admin site link (see
+    # templates/admin/index.html) points here.
+    path('admin/analytics/', analytics_dashboard, name='admin_analytics'),
     path('admin/', admin.site.urls),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('ads.txt', ads_txt, name='ads_txt'),

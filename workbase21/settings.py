@@ -70,6 +70,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # Logs page visits for the admin's Site Analytics dashboard. Must
+    # come after SessionMiddleware (needs request.session).
+    'jobs.middleware.VisitTrackingMiddleware',
 ]
 
 ROOT_URLCONF = 'workbase21.urls'

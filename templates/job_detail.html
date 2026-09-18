@@ -37,6 +37,9 @@
           {% if job.type == 'job' %}
             <span class="job-type-badge">{{ job.sector_label }}</span>
           {% endif %}
+          {% if job.is_expired %}
+            <span class="job-type-badge job-type-expired">Expired</span>
+          {% endif %}
           <h1>{{ job.title }}</h1>
           <p class="job-detail-company">{{ job.company.name }}</p>
         </div>

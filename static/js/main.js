@@ -133,4 +133,71 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  /* ---------------------------------------------------------------------
+     7. Voice search (Web Speech API) — lets job seekers speak instead
+     of typing in either search box. Submits the form automatically
+     once speech is recognised. Silently hides the mic button on
+     browsers that don't support it (e.g. Firefox), so nothing breaks.
+     --------------------------------------------------------------------- */
+  var SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  document.querySelectorAll('[data-voice-search-btn]').forEach(function (micBtn) {
+    if (!SpeechRecognitionCtor) {
+      micBtn.style.display = 'none';
+      return;
+    }
+
+    var form = micBtn.closest('form');
+    var input = form ? form.querySelector('input[name="q"]') : null;
+    if (!input) return;
+
+    var recognition = new SpeechRecognitionCtor();
+    recognition.lang = 'en-ZA';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    var listening = false;
+
+    recognition.addEventListener('start', function () {
+      listening = true;
+      micBtn.classList.add('listening');
+      micBtn.setAttribute('aria-label', 'Listening...');
+      input.placeholder = 'Listening...';
+    });
+
+    function stopListening() {
+      listening = false;
+      micBtn.classList.remove('listening');
+      micBtn.setAttribute('aria-label', 'Search by voice');
+      input.placeholder = input.dataset.originalPlaceholder || input.placeholder;
+    }
+
+    recognition.addEventListener('end', stopListening);
+
+    recognition.addEventListener('result', function (event) {
+      var transcript = event.results[0][0].transcript;
+      input.value = transcript;
+      form.submit();
+    });
+
+    recognition.addEventListener('error', function () {
+      stopListening();
+    });
+
+    micBtn.addEventListener('click', function () {
+      if (listening) {
+        recognition.stop();
+        return;
+      }
+      if (!input.dataset.originalPlaceholder) {
+        input.dataset.originalPlaceholder = input.placeholder;
+      }
+      try {
+        recognition.start();
+      } catch (err) {
+        // start() throws if called while already active — ignore.
+      }
+    });
+  });
+
 });
