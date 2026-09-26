@@ -170,3 +170,14 @@
   .auth-link-cta { padding: 6px 9px; }
 }
 
+/* ==========================================================================
+   Smallest phones (< 360px, e.g. 320px): logged-out visitors' "Log In" moves
+   from the header into the hamburger menu (first item), keeping "Sign Up"
+   visible. With Log In in the header, the header only fitted by ~3px with
+   the normal font and overflowed with wider fallback fonts (seen on Windows).
+   ========================================================================== */
+@media (max-width: 359px) {
+  .auth-link-login { display: none; }
+  .nav-login-item { display: block; }
+}
+

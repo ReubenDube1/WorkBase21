@@ -128,6 +128,15 @@ else:
     }
 
 
+# Tests (python manage.py test) use their own temporary database file,
+# created and deleted automatically — never the real database.
+DATABASES['default']['TEST'] = {'NAME': str(BASE_DIR / 'test_db.sqlite3')}
+
+# Default test run skips the slower real-browser "phone checks";
+# run those with:  python manage.py phone_check
+TEST_RUNNER = 'workbase21.test_runner.WorkBaseTestRunner'
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 

@@ -1601,6 +1601,7 @@ a.career-map-node:hover { border-color: var(--primary); color: var(--primary); }
    Header: account links in the hamburger menu, alert badge on the icon
    ========================================================================== */
 .nav-account-item { display: none; }          /* desktop: they live in the header bar */
+.nav-login-item { display: none; }            /* only shown on the smallest phones, see responsive.css */
 .nav-alert-count {
   display: inline-block;
   margin-left: 6px;

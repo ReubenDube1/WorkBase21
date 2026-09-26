@@ -210,6 +210,36 @@ site for other visitors.
 
 ---
 
+## 5c. Automated Tests — run before every push
+
+**Everyday check (about 30 seconds):**
+```
+python manage.py test
+```
+- `OK` at the end → safe to push.
+- `FAILED` → don't push yet. Each failure says in one sentence what went
+  wrong (e.g. *"Expected to see 'Message sent' on /contact/..."*).
+
+Covers every page, sign-up/login (and how errors are shown), password
+reset/change, download & delete my data, search and filters, hidden and
+expired listings, Contact form + pop-up, saved jobs/tracker, job alerts,
+eligibility/recommendations/careers, admin tools, backups & restore, the
+weekly backup email, and privacy (job seekers can't see each other's data).
+
+**Phone checks (a few minutes) — real browser at phone, tablet and laptop
+sizes.** Run before layout/design changes:
+```
+pip install -r requirements-dev.txt      (one time)
+playwright install chromium              (one time, downloads a browser)
+python manage.py phone_check
+```
+
+Tests use a temporary practice database (`test_db.sqlite3`, deleted
+automatically) — never your real data — and never send real emails.
+Tests live in `jobs/tests/` and `accounts/tests/`.
+
+---
+
 ## 5b. Connecting Your Custom Domain (workbase21.co.za)
 
 Congrats on the domain! Here's how to point it at your Render app.

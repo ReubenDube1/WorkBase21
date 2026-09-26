@@ -56,6 +56,9 @@
         {# Only shown inside the hamburger menu (phones/tablets) — on desktop these live in the header bar. #}
         <li class="nav-account-item"><a href="{{ profile_url }}" class="{% if request.path == profile_url %}active{% endif %}">My Profile{% if job_alert_count %} <span class="nav-alert-count">{% if job_alert_count > 9 %}9+{% else %}{{ job_alert_count }}{% endif %} new</span>{% endif %}</a></li>
         <li class="nav-account-item"><a href="{{ for_you_url }}" class="{% if request.path == for_you_url %}active{% endif %}">For You</a></li>
+        {% else %}
+        {# Only on the smallest phones (< 360px), where the header has no room for it. #}
+        <li class="nav-login-item"><a href="{% url 'login' %}">Log In</a></li>
         {% endif %}
         {% for item in nav_job_types %}
         <li><a href="{% url item.slug %}" class="{% if active_type == item.slug %}active{% endif %}">{{ item.label }}</a></li>
@@ -85,7 +88,7 @@
             <button type="submit" class="auth-link auth-link-muted auth-link-button">Log Out</button>
           </form>
         {% else %}
-          <a href="{% url 'login' %}" class="auth-link">Log In</a>
+          <a href="{% url 'login' %}" class="auth-link auth-link-login">Log In</a>
           <a href="{% url 'register' %}" class="auth-link auth-link-cta">Sign Up</a>
         {% endif %}
       </div>

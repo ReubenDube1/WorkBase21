@@ -36,7 +36,10 @@ KEEP_SAFETY_COPIES = 3
 # ---------------------------------------------------------------------------
 
 def db_path():
-    return Path(settings.DATABASES['default']['NAME'])
+    # The database Django is ACTUALLY using right now. During tests this is
+    # the temporary test database, never the real one.
+    from django.db import connections
+    return Path(connections['default'].settings_dict['NAME'])
 
 
 def media_root():
@@ -46,7 +49,7 @@ def media_root():
 def backup_dir():
     """Small folder next to the database for backup bookkeeping and the
     safety copy made before a restore (on Render: /var/data/backups)."""
-    d = db_path().parent / 'backups'
+    d = Path(getattr(settings, 'BACKUP_DIR', None) or (db_path().parent / 'backups'))
     d.mkdir(parents=True, exist_ok=True)
     return d
 

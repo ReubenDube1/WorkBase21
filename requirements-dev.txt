@@ -1,0 +1,4 @@
+# Only needed on YOUR computer for the phone checks (python manage.py phone_check).
+# Render does not use this file.
+-r requirements.txt
+playwright>=1.45
