@@ -205,7 +205,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Site info used in templates (SEO meta tags, footer, etc.)
 SITE_NAME = 'WorkBase21'
 SITE_DOMAIN = os.environ.get('SITE_DOMAIN', 'workbase21.co.za')
-SITE_EMAIL = os.environ.get('SITE_EMAIL', 'workbase21@gmail.com')
+SITE_EMAIL = os.environ.get('SITE_EMAIL', 'contact.workbase21@gmail.com')
 SITE_DESCRIPTION = (
     'WorkBase21 connects South African job seekers with jobs, internships, '
     'learnerships and bursaries.'
@@ -217,7 +217,7 @@ SITE_DESCRIPTION = (
 # Used for password reset emails and Contact-page messages.
 #
 # On Render, set these environment variables:
-#   EMAIL_HOST_USER      = the Gmail address, e.g. workbase21@gmail.com
+#   EMAIL_HOST_USER      = the Gmail address, e.g. contact.workbase21@gmail.com
 #   EMAIL_HOST_PASSWORD  = the 16-character App password (NOT the normal
 #                          Gmail password)
 # If they're missing (e.g. on your laptop), emails are printed in the
