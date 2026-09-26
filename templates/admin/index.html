@@ -33,6 +33,16 @@
       </caption>
     </table>
   </div>
+  <div class="module" id="backups-shortcut-module" style="margin-bottom: 20px;">
+    <table>
+      <caption>
+        <a href="{% url 'admin_backups' %}" style="display:flex;align-items:center;justify-content:space-between;color:#fff;">
+          <span>💾 Backups — download, weekly email &amp; restore</span>
+          <span style="font-weight:normal;">Open &rarr;</span>
+        </a>
+      </caption>
+    </table>
+  </div>
   {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
 </div>
 {% endblock %}

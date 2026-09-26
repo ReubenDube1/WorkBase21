@@ -10,6 +10,7 @@ living under /admin/ and using the admin's own look and feel.
 """
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.admin.sites import site as admin_site
 from django.db.models import Count
@@ -263,3 +264,108 @@ def listing_insights(request):
         'has_experience_data': any(r['seekers'] or r['open_jobs'] for r in experience_rows),
     }
     return render(request, 'admin/listing_insights.html', context)
+
+
+# ---------------------------------------------------------------------------
+# Backups (see jobs/backup.py)
+# ---------------------------------------------------------------------------
+
+@staff_member_required
+def backups_page(request):
+    import datetime
+    from django.utils import timezone as tz
+    from . import backup
+
+    db_file = backup.db_path()
+    m_size, m_count = backup.media_size()
+    last = backup.last_emailed()
+    last_dt = tz.localtime(datetime.datetime.fromtimestamp(last, tz=datetime.timezone.utc)) if last else None
+    next_dt = last_dt + datetime.timedelta(days=7) if last_dt else None
+    context = {
+        **admin_site.each_context(request),
+        'title': 'Backups',
+        'db_size': backup.human_size(db_file.stat().st_size) if db_file.exists() else '—',
+        'media_size': backup.human_size(m_size),
+        'media_count': m_count,
+        'email_configured': backup.email_is_configured(),
+        'site_email': settings.SITE_EMAIL,
+        'last_emailed': last_dt,
+        'next_email': next_dt,
+        'is_superuser': request.user.is_superuser,
+    }
+    return render(request, 'admin/backups.html', context)
+
+
+@staff_member_required
+def backup_download_db(request):
+    from django.http import HttpResponse
+    from . import backup
+    data, _ = backup.gzipped_database()
+    response = HttpResponse(data, content_type='application/gzip')
+    response['Content-Disposition'] = f'attachment; filename="workbase21-database-{backup.stamp()}.sqlite3.gz"'
+    return response
+
+
+@staff_member_required
+def backup_download_full(request):
+    import tempfile
+    from django.http import FileResponse
+    from . import backup
+    # Built in a temporary file (deleted automatically once the download
+    # finishes), so a big zip never sits in memory.
+    tmp = tempfile.NamedTemporaryFile(suffix='.zip')
+    backup.write_full_backup_zip(tmp)
+    tmp.seek(0)
+    return FileResponse(tmp, as_attachment=True, filename=f"workbase21-full-backup-{backup.stamp()}.zip",
+                        content_type='application/zip')
+
+
+@staff_member_required
+def backup_email_now(request):
+    import smtplib
+    from django.contrib import messages
+    from django.shortcuts import redirect
+    from . import backup
+    if request.method != 'POST':
+        return redirect('admin_backups')
+    if not backup.email_is_configured():
+        messages.error(request, "Email isn't set up on this server (EMAIL_HOST_USER / EMAIL_HOST_PASSWORD), so the backup can't be emailed.")
+        return redirect('admin_backups')
+    try:
+        size = backup.email_database_backup('manual')
+    except (smtplib.SMTPException, OSError, RuntimeError) as e:
+        messages.error(request, f"The backup couldn't be emailed: {e}. Try again, or use Download instead.")
+    else:
+        messages.success(request, f"Backup emailed to {settings.SITE_EMAIL} ({backup.human_size(size)}). The weekly timer restarts from now.")
+    return redirect('admin_backups')
+
+
+@staff_member_required
+def backup_restore(request):
+    from django.contrib import messages
+    from django.http import HttpResponseForbidden
+    from django.shortcuts import redirect
+    from . import backup
+    if not request.user.is_superuser:
+        return HttpResponseForbidden("Only superusers can restore backups.")
+    if request.method != 'POST':
+        return redirect('admin_backups')
+    uploaded = request.FILES.get('backup_file')
+    if not uploaded:
+        messages.error(request, "Choose a backup file first.")
+        return redirect('admin_backups')
+    if request.POST.get('confirm', '').strip() != 'RESTORE':
+        messages.error(request, "Nothing was changed: type RESTORE (in capitals) in the box to confirm.")
+        return redirect('admin_backups')
+    try:
+        safety, counts = backup.restore_database(uploaded)
+    except backup.RestoreError as e:
+        messages.error(request, f"Nothing was changed: {e}")
+        return redirect('admin_backups')
+    messages.success(
+        request,
+        f"Database restored ({counts['jobs']} listings, {counts['users']} user accounts in the backup). "
+        f"The previous database was saved on the server as {safety.name}. "
+        "If you were logged out, just log in again.",
+    )
+    return redirect('admin_backups')

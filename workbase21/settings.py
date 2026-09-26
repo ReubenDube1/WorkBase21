@@ -75,6 +75,9 @@ MIDDLEWARE = [
     # Logs page visits for the admin's Site Analytics dashboard. Must
     # come after SessionMiddleware (needs request.session).
     'jobs.middleware.VisitTrackingMiddleware',
+
+    # Emails a database backup to SITE_EMAIL once a week (jobs/backup.py).
+    'jobs.middleware.WeeklyBackupMiddleware',
 ]
 
 ROOT_URLCONF = 'workbase21.urls'

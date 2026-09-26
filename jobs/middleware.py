@@ -64,3 +64,24 @@ class VisitTrackingMiddleware:
             session_key=request.session.session_key or '',
             job_id=job_id,
         )
+
+
+class WeeklyBackupMiddleware:
+    """Triggers the weekly emailed database backup (see jobs/backup.py).
+    Render has no free scheduler that can reach the disk, so normal site
+    traffic is used as the clock: after each response it cheaply checks
+    (at most once an hour) whether a backup is due, and if so sends it in
+    the background — visitors are never kept waiting."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        try:
+            from .backup import maybe_send_weekly_backup
+            maybe_send_weekly_backup()
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception("Weekly backup check failed")
+        return response

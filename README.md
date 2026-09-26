@@ -174,6 +174,42 @@ cp /var/data/db.sqlite3 /var/data/db-backup-$(date +%Y%m%d-%H%M).sqlite3
 
 ---
 
+## 5a. Backups & Restoring
+
+Everything that isn't code (listings, articles, companies, reviews, user
+accounts, profiles, saved jobs, alerts) lives in `/var/data/db.sqlite3`;
+uploaded files live in `/var/data/media`. Neither is on GitHub.
+
+**Three layers of protection:**
+1. **Render daily snapshots** — Render copies the whole disk every day and
+   keeps 7 days (Render → Disk → Snapshots). Nothing to do.
+2. **Weekly emailed database backup** — sent automatically to `SITE_EMAIL`
+   (`jobs/backup.py`, triggered by normal site traffic). Needs the Gmail
+   settings. Uploaded files aren't included (too big to email).
+3. **Downloads** — Django admin → **Backups**: *Download database* (small)
+   or *Download everything* (database + uploaded files, one zip). Keep a
+   copy on your laptop / Google Drive at least monthly.
+
+**Something broke in the last 7 days?** Render → Disk → Snapshots → pick a
+day from BEFORE the problem → Restore. Everything after that moment
+(including new sign-ups) is lost, so pick the latest good one.
+
+**Need an older copy, or a copy from email/your laptop?** Django admin →
+Backups → *Restore database from a backup file* (superusers only): choose
+the `.sqlite3.gz` (from the email) or the `.zip`, type `RESTORE`, submit.
+A safety copy of the current database is saved first in
+`/var/data/backups/` (the last 3 are kept), and migrations run
+automatically, so backups from older versions of the site work too.
+
+**Privacy:** backups contain job seekers' personal information. Keep them
+private and delete copies older than about 3 months.
+
+`gunicorn.conf.py` (loaded automatically) lets the server handle several
+requests at once, so a big download neither gets cut off nor freezes the
+site for other visitors.
+
+---
+
 ## 5b. Connecting Your Custom Domain (workbase21.co.za)
 
 Congrats on the domain! Here's how to point it at your Render app.

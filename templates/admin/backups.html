@@ -1,0 +1,96 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+  &rsaquo; Backups
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+  .wb21-card { background: var(--body-bg, #fff); border: 1px solid var(--border-color, #ddd); border-radius: 6px; padding: 18px 20px; margin-bottom: 20px; max-width: 900px; }
+  .wb21-card h2 { font-size: 1.05rem; margin: 0 0 6px; }
+  .wb21-card p { margin: 6px 0; line-height: 1.55; }
+  .wb21-sub { color: var(--body-quiet-color, #666); font-size: 0.86rem; }
+  .wb21-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; align-items: center; }
+  .wb21-btn { display: inline-block; padding: 9px 16px; border-radius: 5px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; font-size: 0.9rem; }
+  .wb21-btn-primary { background: #2563EB; color: #fff !important; }
+  .wb21-btn-outline { background: transparent; color: #2563EB !important; border: 1px solid #2563EB; }
+  .wb21-btn-danger { background: #DC2626; color: #fff !important; }
+  .wb21-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 10px; }
+  .wb21-fact { border: 1px solid var(--border-color, #eee); border-radius: 6px; padding: 10px 12px; }
+  .wb21-fact b { display: block; font-size: 1.15rem; }
+  .wb21-ok { color: #15803D; font-weight: 600; }
+  .wb21-warn { color: #B45309; font-weight: 600; }
+  .wb21-danger-card { border-color: #FECACA; }
+  .wb21-card ol { margin: 6px 0 6px 20px; padding: 0; }
+  .wb21-card li { margin: 4px 0; line-height: 1.5; }
+  .wb21-card input[type=text] { padding: 7px 10px; width: 140px; }
+</style>
+
+<h1>Backups</h1>
+
+<div class="wb21-card">
+  <h2>Your data right now</h2>
+  <div class="wb21-facts">
+    <div class="wb21-fact"><span class="wb21-sub">Database</span><b>{{ db_size }}</b><span class="wb21-sub">jobs, articles, users, profiles…</span></div>
+    <div class="wb21-fact"><span class="wb21-sub">Uploaded files</span><b>{{ media_size }}</b><span class="wb21-sub">{{ media_count }} files (logos, images, Z83s)</span></div>
+    <div class="wb21-fact"><span class="wb21-sub">Last emailed backup</span>
+      <b>{% if last_emailed %}{{ last_emailed|date:"d M Y, H:i" }}{% else %}Not yet{% endif %}</b>
+      <span class="wb21-sub">{% if next_email %}next one due around {{ next_email|date:"d M Y" }}{% elif email_configured %}first one goes out within the hour{% else %}email isn't set up{% endif %}</span></div>
+  </div>
+</div>
+
+<div class="wb21-card">
+  <h2>1. Automatic protection</h2>
+  <p><span class="wb21-ok">✓ Render daily snapshots</span> — Render copies the whole disk every day and keeps the last 7 days
+     (Render dashboard → Disk → Snapshots). Use these if something breaks badly.</p>
+  <p>{% if email_configured %}<span class="wb21-ok">✓ Weekly email</span> — a copy of the database is emailed to <b>{{ site_email }}</b> every week, automatically.
+     {% else %}<span class="wb21-warn">✗ Weekly email is off</span> — email isn't set up on this server, so weekly backups can't be sent.{% endif %}
+     It includes all listings, articles and user accounts; it doesn't include uploaded images/files (too big to email).</p>
+  <form method="post" action="{% url 'admin_backup_email_now' %}" class="wb21-row">
+    {% csrf_token %}
+    <button type="submit" class="wb21-btn wb21-btn-outline" {% if not email_configured %}disabled{% endif %}>Email a database backup now</button>
+    <span class="wb21-sub">Handy right before a big change.</span>
+  </form>
+</div>
+
+<div class="wb21-card">
+  <h2>2. Download a copy to your computer</h2>
+  <p>Keep a copy off Render — on your laptop and in Google Drive. Aim for at least <b>once a month</b>, and before big changes.</p>
+  <div class="wb21-row">
+    <a class="wb21-btn wb21-btn-primary" href="{% url 'admin_backup_download_db' %}">Download database</a>
+    <span class="wb21-sub">small, a few seconds</span>
+  </div>
+  <div class="wb21-row">
+    <a class="wb21-btn wb21-btn-outline" href="{% url 'admin_backup_download_full' %}">Download everything (database + uploaded files)</a>
+    <span class="wb21-sub">about {{ media_size }} — best on Wi-Fi</span>
+  </div>
+  <p class="wb21-sub">These files contain job seekers' personal information. Keep them private, and delete copies older than about 3 months.</p>
+</div>
+
+<div class="wb21-card wb21-danger-card">
+  <h2>3. Restore the database from a backup file</h2>
+  <p><b>First, is Render's snapshot enough?</b> If the problem started within the last 7 days, restoring a Render snapshot is simpler.
+     Use this only when you need an older copy, or a copy you downloaded or received by email.</p>
+  <p><b>What restoring does:</b> the whole database — listings, articles, companies, reviews and <b>all user accounts</b> — goes back to how it was
+     when that backup was made. Anything added or changed since then is replaced. A safety copy of the current database is saved on the
+     server first, so it can be undone. Uploaded images/files are not touched.</p>
+  {% if is_superuser %}
+  <form method="post" action="{% url 'admin_backup_restore' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <ol>
+      <li>Choose the backup file (the <code>.sqlite3.gz</code> from the email, or a downloaded <code>.gz</code> or <code>.zip</code>):<br>
+        <input type="file" name="backup_file" accept=".gz,.zip,.sqlite3" required></li>
+      <li>Type <b>RESTORE</b> to confirm: <input type="text" name="confirm" autocomplete="off" required></li>
+    </ol>
+    <div class="wb21-row"><button type="submit" class="wb21-btn wb21-btn-danger">Restore database</button>
+      <span class="wb21-sub">You may be logged out afterwards — just log in again.</span></div>
+  </form>
+  {% else %}
+  <p class="wb21-warn">Only superuser accounts can restore backups.</p>
+  {% endif %}
+</div>
+{% endblock %}

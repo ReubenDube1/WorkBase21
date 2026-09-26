@@ -9,7 +9,10 @@ from django.contrib.sitemaps.views import sitemap
 
 from jobs.views import ads_txt, robots_txt
 from jobs.sitemaps import JobSitemap, ArticleSitemap, StaticViewSitemap
-from jobs.admin_views import analytics_dashboard, listing_insights
+from jobs.admin_views import (
+    analytics_dashboard, listing_insights, backups_page, backup_download_db,
+    backup_download_full, backup_email_now, backup_restore,
+)
 
 sitemaps = {
     'jobs': JobSitemap,
@@ -23,6 +26,11 @@ urlpatterns = [
     # templates/admin/index.html) points here.
     path('admin/analytics/', analytics_dashboard, name='admin_analytics'),
     path('admin/listing-insights/', listing_insights, name='admin_listing_insights'),
+    path('admin/backups/', backups_page, name='admin_backups'),
+    path('admin/backups/download-database/', backup_download_db, name='admin_backup_download_db'),
+    path('admin/backups/download-everything/', backup_download_full, name='admin_backup_download_full'),
+    path('admin/backups/email-now/', backup_email_now, name='admin_backup_email_now'),
+    path('admin/backups/restore/', backup_restore, name='admin_backup_restore'),
     path('admin/', admin.site.urls),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('ads.txt', ads_txt, name='ads_txt'),
