@@ -16,4 +16,42 @@
     </form>
   </div>
 </section>
+
+{% for message in messages %}{% if 'modal' in message.tags %}
+<dialog class="result-modal result-modal-{{ message.level_tag }}" id="contact-result" aria-labelledby="contact-result-title" aria-describedby="contact-result-text">
+  <div class="result-modal-body">
+    <div class="result-modal-icon" aria-hidden="true">{% if message.level_tag == 'success' %}&#10003;{% else %}!{% endif %}</div>
+    <h2 id="contact-result-title">{% if message.level_tag == 'success' %}Message sent{% else %}Message not sent{% endif %}</h2>
+    <p id="contact-result-text">{{ message }}</p>
+    {% if message.level_tag != 'success' %}
+    <p class="result-modal-alt">You can also email us directly at <a href="mailto:{{ SITE_EMAIL }}">{{ SITE_EMAIL }}</a>.</p>
+    {% endif %}
+    <form method="dialog">
+      <button type="submit" class="btn btn-primary">OK</button>
+    </form>
+  </div>
+</dialog>
+<noscript><div class="container"><div class="alert alert-{{ message.level_tag }}">{{ message }}</div></div></noscript>
+{% endif %}{% endfor %}
 {% endblock %}
+
+{% block extra_scripts %}
+<script>
+  (function () {
+    var dlg = document.getElementById('contact-result');
+    if (!dlg) return;
+    // Opened here (not with an 'open' attribute in the HTML), so the
+    // browser doesn't scroll down to the OK button before it pops up.
+    if (typeof dlg.showModal === 'function') {
+      dlg.showModal();                                         // real pop-up: dims the page, traps focus, Esc closes
+    } else {
+      dlg.setAttribute('open', '');                            // very old browsers: shown in the page instead
+      return;
+    }
+    dlg.addEventListener('click', function (e) {
+      if (e.target === dlg) dlg.close();                       // tap outside the box closes it
+    });
+  })();
+</script>
+{% endblock %}
+

@@ -7,11 +7,22 @@
 }
 
 /* ==========================================================================
-   Collapsed (hamburger) menu: phones, tablets and small laptops (<= 1100px).
-   Above 1100px the full menu, search box and account links fit in one row;
-   below it they don't (they overflowed at 1024px), so the menu collapses.
+   Laptops (1201-1400px): full menu, but tighter spacing so the menu, search
+   box and account links all fit on one line.
    ========================================================================== */
-@media (max-width: 1100px) {
+@media (min-width: 1201px) and (max-width: 1400px) {
+  .header-inner { gap: 16px; }
+  .nav-links { gap: 20px; }
+  .header-actions { gap: 12px; }
+  .nav-search input { width: 150px; }
+}
+
+/* ==========================================================================
+   Collapsed (hamburger) menu: phones, tablets and small laptops (<= 1200px).
+   Above 1200px the full menu, search box and account links fit in one row;
+   below it they don't (they overflowed at 1024-1200px), so the menu collapses.
+   ========================================================================== */
+@media (max-width: 1200px) {
   .hamburger { display: flex; }
   .main-nav {
     position: fixed;

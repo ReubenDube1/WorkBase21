@@ -166,6 +166,10 @@ h1, h2, h3, h4 {
   color: var(--secondary);
   position: relative;
   padding: 6px 2px;
+  /* The hover underline (::after, zero width) made Chrome wrap each link
+     onto an empty second line, so the menu sat higher than the search box
+     and account links. Links are single words — never wrap them. */
+  white-space: nowrap;
   transition: color var(--transition);
 }
 .nav-links a::after {
@@ -1666,6 +1670,49 @@ a.career-map-node:hover { border-color: var(--primary); color: var(--primary); }
 .form-group .form-help { color: var(--text-grey); font-size: 0.8rem; line-height: 1.5; }
 .form-group .form-help ul { margin: 4px 0 0 18px; padding: 0; }
 .form-group .form-help li { margin: 0; }
+
+/* ==========================================================================
+   Pop-up result message (Contact page)
+   ========================================================================== */
+.result-modal {
+  border: none;
+  padding: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  margin: auto;
+  color: var(--text);
+  background: var(--card);
+}
+.result-modal[open] { animation: resultModalIn 0.22s ease-out; }
+.result-modal::backdrop { background: rgba(15, 23, 42, 0.55); }
+.result-modal-body { padding: 32px 28px 26px; text-align: center; }
+.result-modal-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.result-modal-success .result-modal-icon { background: #DCFCE7; color: #15803D; }
+.result-modal-error .result-modal-icon { background: #FEE2E2; color: #B91C1C; }
+.result-modal h2 { font-size: 1.35rem; margin: 0 0 10px; }
+.result-modal p { color: var(--text-grey); font-size: 0.95rem; line-height: 1.6; margin: 0 0 10px; overflow-wrap: anywhere; }
+.result-modal .result-modal-alt { font-size: 0.88rem; }
+.result-modal .result-modal-alt a { color: var(--primary); font-weight: 600; }
+.result-modal form { margin: 18px 0 0; }
+.result-modal .btn { min-width: 140px; }
+@keyframes resultModalIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) { .result-modal[open] { animation: none; } }
 
 @media (max-width: 640px) {
   .job-filters { padding: 16px 18px; }

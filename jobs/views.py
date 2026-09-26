@@ -440,7 +440,12 @@ def contact(request):
     form = ContactForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         if over_limit(f'contact:ip:{client_ip(request)}', 5):
-            messages.error(request, "Too many messages sent from here recently. Please try again later.")
+            messages.error(
+                request,
+                "You've sent several messages in a short time, so this one wasn't sent. "
+                "Please wait a while and try again.",
+                extra_tags='modal',
+            )
         else:
             data = form.cleaned_data
             # Sent FROM the site's Gmail (Gmail won't send as someone
@@ -463,11 +468,17 @@ def contact(request):
                 logger.exception("Contact form email failed to send")
                 messages.error(
                     request,
-                    f"Sorry, your message couldn't be sent right now. Please try again, "
-                    f"or email us directly at {settings.SITE_EMAIL}.",
+                    "Something went wrong on our side and your message couldn't be sent. "
+                    "What you typed is still in the form, so you can try again in a few minutes.",
+                    extra_tags='modal',
                 )
             else:
-                messages.success(request, "Thanks for reaching out! We'll get back to you soon.")
+                messages.success(
+                    request,
+                    f"Thanks, {data['name']}! Your message has been sent. "
+                    f"We'll reply to {data['email']} as soon as we can.",
+                    extra_tags='modal',
+                )
                 return redirect('contact')
 
     return render(request, 'contact.html', {
