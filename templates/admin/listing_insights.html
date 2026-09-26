@@ -1,0 +1,174 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+  &rsaquo; Listing Insights
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+  .wb21-stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .wb21-stat-card { background: var(--body-bg, #fff); border: 1px solid var(--border-color, #ccc); border-radius: 6px; padding: 14px 16px; }
+  .wb21-stat-card h3 { margin: 0 0 4px; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--body-quiet-color, #666); font-weight: 600; }
+  .wb21-stat-card .wb21-big { font-size: 1.7rem; font-weight: 700; line-height: 1.1; }
+  .wb21-sub { font-size: 0.82rem; color: var(--body-quiet-color, #666); margin-top: 2px; }
+  .wb21-section { margin-bottom: 32px; }
+  .wb21-section h2 { font-size: 1.05rem; margin-bottom: 4px; }
+  .wb21-section > p.wb21-sub { margin-bottom: 10px; }
+  .wb21-table-wrap { overflow-x: auto; border: 1px solid var(--border-color, #eee); border-radius: 6px; }
+  table.wb21-table { width: 100%; border-collapse: collapse; }
+  table.wb21-table th, table.wb21-table td { padding: 8px 10px; border-bottom: 1px solid var(--border-color, #eee); text-align: left; font-size: 0.88rem; white-space: nowrap; }
+  table.wb21-table td.wb21-wrap { white-space: normal; }
+  table.wb21-table th { color: var(--body-quiet-color, #666); font-weight: 600; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.03em; }
+  table.wb21-table td.num, table.wb21-table th.num { text-align: right; }
+  .wb21-empty { color: var(--body-quiet-color, #888); padding: 12px 0; }
+  .wb21-tag { display: inline-block; font-size: 0.72rem; padding: 2px 7px; margin: 1px 2px 1px 0; border-radius: 10px; background: #FEF3C7; color: #92400E; }
+  .wb21-warn { color: #B45309; font-weight: 600; }
+  .wb21-two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
+</style>
+
+<h1>Listing Insights</h1>
+<p class="wb21-sub" style="margin-bottom:20px;">
+  How job seekers engage with your listings, what needs attention, and what people are looking for.
+  Totals only — no individual job seeker is shown here. "Saves" and "Applied" come from job seekers' own trackers
+  (applying happens on the employer's side, so Applied only counts people who marked it themselves).
+</p>
+
+<div class="wb21-stat-grid">
+  <div class="wb21-stat-card"><h3>Active listings</h3><div class="wb21-big">{{ summary.active }}</div><div class="wb21-sub">{{ summary.open }} still open</div></div>
+  <div class="wb21-stat-card"><h3>Closing in 7 days</h3><div class="wb21-big">{{ summary.closing_soon }}</div></div>
+  <div class="wb21-stat-card"><h3>Past deadline, still shown</h3><div class="wb21-big">{{ summary.expired_visible }}</div><div class="wb21-sub">Shown with an "Expired" label</div></div>
+  <div class="wb21-stat-card"><h3>Saves</h3><div class="wb21-big">{{ summary.saves }}</div><div class="wb21-sub">{{ summary.applied }} marked applied</div></div>
+  <div class="wb21-stat-card"><h3>Job seekers</h3><div class="wb21-big">{{ summary.job_seekers }}</div><div class="wb21-sub">{{ summary.saved_searches }} saved search{{ summary.saved_searches|pluralize:"es" }}</div></div>
+</div>
+
+<div class="wb21-section">
+  <h2>Top open listings by engagement</h2>
+  <p class="wb21-sub">Views = unique visitors. Save rate = saves &divide; views.</p>
+  {% if top_listings %}
+  <div class="wb21-table-wrap">
+  <table class="wb21-table">
+    <thead><tr><th>Listing</th><th>Deadline</th><th class="num">Views</th><th class="num">Saves</th><th class="num">Applied</th><th class="num">Save rate</th></tr></thead>
+    <tbody>
+    {% for job in top_listings %}
+      <tr>
+        <td class="wb21-wrap"><a href="{% url 'admin:jobs_job_change' job.pk %}">{{ job.title }}</a><div class="wb21-sub">{{ job.company.name }}</div></td>
+        <td>{{ job.deadline_display }}</td>
+        <td class="num">{{ job.n_views }}</td>
+        <td class="num">{{ job.n_saves }}</td>
+        <td class="num">{{ job.n_applied }}</td>
+        <td class="num">{% if job.save_rate is not None %}{{ job.save_rate }}%{% else %}&ndash;{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}<p class="wb21-empty">No open listings yet.</p>{% endif %}
+</div>
+
+<div class="wb21-section">
+  <h2>Closing within 7 days</h2>
+  <p class="wb21-sub">Worth a social media share before they close.</p>
+  {% if closing_soon %}
+  <div class="wb21-table-wrap">
+  <table class="wb21-table">
+    <thead><tr><th>Listing</th><th>Closes</th><th class="num">Views</th><th class="num">Saves</th></tr></thead>
+    <tbody>
+    {% for job in closing_soon %}
+      <tr>
+        <td class="wb21-wrap"><a href="{% url 'admin:jobs_job_change' job.pk %}">{{ job.title }}</a><div class="wb21-sub">{{ job.company.name }}</div></td>
+        <td>{{ job.deadline|date:"D d M" }}</td>
+        <td class="num">{{ job.n_views }}</td>
+        <td class="num">{{ job.n_saves }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}<p class="wb21-empty">Nothing closing this week.</p>{% endif %}
+</div>
+
+<div class="wb21-section">
+  <h2>Open listings missing search filters {% if missing_total %}<span class="wb21-warn">({{ missing_total }})</span>{% endif %}</h2>
+  <p class="wb21-sub">
+    These listings won't show up when job seekers filter by the missing fields, and job alerts, recommendations and the
+    eligibility checker can't match on them. Filling them in makes a listing easier to find.
+    {% if missing_total > 25 %}Showing the 25 newest &mdash; <a href="{% url 'admin:jobs_job_changelist' %}?filter_fields=missing&amp;is_active__exact=1">see all {{ missing_total }}</a>.{% endif %}
+  </p>
+  {% if needs_attention %}
+  <div class="wb21-table-wrap">
+  <table class="wb21-table">
+    <thead><tr><th>Listing</th><th>Missing</th></tr></thead>
+    <tbody>
+    {% for row in needs_attention %}
+      <tr>
+        <td class="wb21-wrap"><a href="{% url 'admin:jobs_job_change' row.job.pk %}">{{ row.job.title }}</a><div class="wb21-sub">{{ row.job.company.name }}</div></td>
+        <td class="wb21-wrap">{% for m in row.missing %}<span class="wb21-tag">{{ m }}</span>{% endfor %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}<p class="wb21-empty">All open listings have their search filters filled in. 👍</p>{% endif %}
+</div>
+
+<h2 style="font-size:1.2rem;margin:36px 0 12px;">What job seekers are looking for</h2>
+<div class="wb21-two-col">
+
+  <div class="wb21-section">
+    <h2>Skills job seekers have</h2>
+    <p class="wb21-sub">Compared with how many open listings ask for each skill. High seekers + few listings = demand you could fill.</p>
+    {% if skill_demand %}
+    <div class="wb21-table-wrap">
+    <table class="wb21-table">
+      <thead><tr><th>Skill</th><th class="num">Job seekers</th><th class="num">Open listings</th></tr></thead>
+      <tbody>{% for s in skill_demand %}<tr><td>{{ s.name }}</td><td class="num">{{ s.seekers }}</td><td class="num">{{ s.open_jobs }}</td></tr>{% endfor %}</tbody>
+    </table>
+    </div>
+    {% else %}<p class="wb21-empty">No job seeker skills yet.</p>{% endif %}
+  </div>
+
+  <div class="wb21-section">
+    <h2>Most saved searches</h2>
+    <p class="wb21-sub">What job seekers asked to be alerted about.</p>
+    {% if top_saved_searches %}
+    <div class="wb21-table-wrap">
+    <table class="wb21-table">
+      <thead><tr><th>Search</th><th class="num">People</th></tr></thead>
+      <tbody>{% for desc, n in top_saved_searches %}<tr><td class="wb21-wrap">{{ desc }}</td><td class="num">{{ n }}</td></tr>{% endfor %}</tbody>
+    </table>
+    </div>
+    {% else %}<p class="wb21-empty">No saved searches yet.</p>{% endif %}
+  </div>
+
+  <div class="wb21-section">
+    <h2>Where job seekers are</h2>
+    <p class="wb21-sub">From profile locations, with open listings mentioning that town/city.</p>
+    {% if seeker_locations %}
+    <div class="wb21-table-wrap">
+    <table class="wb21-table">
+      <thead><tr><th>Location</th><th class="num">Job seekers</th><th class="num">Open listings</th></tr></thead>
+      <tbody>{% for row in seeker_locations %}<tr><td>{{ row.location }}</td><td class="num">{{ row.seekers }}</td><td class="num">{{ row.open_jobs }}</td></tr>{% endfor %}</tbody>
+    </table>
+    </div>
+    {% else %}<p class="wb21-empty">No job seeker locations yet.</p>{% endif %}
+  </div>
+
+  <div class="wb21-section">
+    <h2>Experience levels</h2>
+    <p class="wb21-sub">Job seekers' experience vs what open listings ask for.</p>
+    {% if has_experience_data %}
+    <div class="wb21-table-wrap">
+    <table class="wb21-table">
+      <thead><tr><th>Level</th><th class="num">Job seekers</th><th class="num">Open listings</th></tr></thead>
+      <tbody>{% for row in experience_rows %}<tr><td>{{ row.label }}</td><td class="num">{{ row.seekers }}</td><td class="num">{{ row.open_jobs }}</td></tr>{% endfor %}</tbody>
+    </table>
+    </div>
+    {% else %}<p class="wb21-empty">No experience data yet.</p>{% endif %}
+  </div>
+
+</div>
+{% endblock %}

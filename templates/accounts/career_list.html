@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>Career Explorer</h1>
+    <p>Browse career paths, see the skills and qualifications they typically ask for, and find related listings.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    {% if career_suggestions %}
+    <div class="profile-card suggestions-card fade-in" style="margin-bottom: 32px;">
+      <h2 class="suggestions-title">Suggested for you</h2>
+      <p class="text-muted">Based on the skills and career goal in your profile.</p>
+      <div class="career-suggestion-list">
+        {% for row in career_suggestions %}
+        <a href="{{ row.career.get_absolute_url }}" class="career-suggestion">
+          <span class="career-suggestion-icon">{{ row.career.icon|default:"💼" }}</span>
+          <span class="career-suggestion-main">
+            <strong>{{ row.career.title }}</strong>
+            <span class="text-muted">
+              {% if row.goal_match %}Matches your career goal{% if row.total %} · {% endif %}{% endif %}
+              {% if row.total %}{{ row.coverage }}% skill coverage{% endif %}
+            </span>
+          </span>
+          <span class="career-suggestion-arrow">&rarr;</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if career_paths %}
+    <div class="career-grid">
+      {% for career in career_paths %}
+      <a href="{% url 'career_detail' career.slug %}" class="career-card fade-in">
+        <div class="career-card-icon">{{ career.icon|default:"💼" }}</div>
+        <h3>{{ career.title }}</h3>
+        {% if career.description %}<p>{{ career.description|truncatewords:22 }}</p>{% endif %}
+        {% if career.skills.all %}
+        <div class="job-skills-tags">
+          {% for s in career.skills.all|slice:":4" %}<span class="skill-tag">{{ s.name }}</span>{% endfor %}
+        </div>
+        {% endif %}
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state fade-in">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5Z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/></svg>
+      <h3>No career paths yet</h3>
+      <p>Check back soon — we're adding career paths regularly.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

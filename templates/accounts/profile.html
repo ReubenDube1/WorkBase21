@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>My Profile</h1>
+    <p>Welcome back, {{ user.username }}.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow-content">
+    <div class="profile-card fade-in">
+      <div class="profile-card-header">
+        <div class="profile-avatar">{{ user.username|slice:":1"|upper }}</div>
+        <div>
+          <h2>{{ user.username }}</h2>
+          <p class="profile-email">{{ user.email }}</p>
+        </div>
+        <a href="{% url 'profile_edit' %}" class="btn btn-outline">Edit Profile</a>
+      </div>
+
+      <div class="profile-quicklinks">
+        <a href="{% url 'recommended_jobs' %}" class="btn btn-primary">See Recommended Jobs</a>
+        <a href="{% url 'careers' %}" class="btn btn-outline">Explore Career Paths</a>
+        <a href="{% url 'application_tracker' %}" class="btn btn-outline">My Applications</a>
+        <a href="{% url 'job_alerts' %}" class="btn btn-outline">Job Alerts{% if job_alert_count %} ({{ job_alert_count }} new){% endif %}</a>
+        <a href="{% url 'account_settings' %}" class="btn btn-outline">Account Settings</a>
+      </div>
+
+      {% if not profile.is_complete %}
+      <div class="profile-nudge">
+        Your profile isn't complete yet — filling in your location, qualification, experience and skills helps us personalize the site for you as new features roll out.
+      </div>
+      {% endif %}
+
+      <div class="profile-facts">
+        <div class="fact">
+          <span class="fact-label">Location</span>
+          <span class="fact-value">{{ profile.location|default:"Not set" }}</span>
+        </div>
+        <div class="fact">
+          <span class="fact-label">Qualification</span>
+          <span class="fact-value">{{ profile.qualification_label|default:"Not set" }}</span>
+        </div>
+        <div class="fact">
+          <span class="fact-label">Experience</span>
+          <span class="fact-value">{{ profile.experience_label|default:"Not set" }}</span>
+        </div>
+        <div class="fact">
+          <span class="fact-label">Career Goal</span>
+          <span class="fact-value">{{ profile.career_goal|default:"Not set" }}</span>
+        </div>
+      </div>
+
+      {% if profile.qualifications.all %}
+      <div class="profile-section">
+        <h3>Qualifications</h3>
+        <div class="job-skills-tags">
+          {% for q in profile.qualifications.all %}<span class="skill-tag">{{ q.name }}</span>{% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if profile.skills.all %}
+      <div class="profile-section">
+        <h3>Skills</h3>
+        <div class="job-skills-tags">
+          {% for s in profile.skills.all %}<span class="skill-tag">{{ s.name }}</span>{% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if profile.bio %}
+      <div class="profile-section">
+        <h3>About</h3>
+        <p>{{ profile.bio }}</p>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if career_suggestions or skill_suggestions %}
+    <div class="profile-card fade-in suggestions-card">
+      <h2 class="suggestions-title">Suggested for you</h2>
+      <p class="text-muted">Based on your skills, qualifications and career goal.</p>
+
+      {% if career_suggestions %}
+      <div class="profile-section">
+        <h3>Career paths</h3>
+        <div class="career-suggestion-list">
+          {% for row in career_suggestions %}
+          <a href="{{ row.career.get_absolute_url }}" class="career-suggestion">
+            <span class="career-suggestion-icon">{{ row.career.icon|default:"💼" }}</span>
+            <span class="career-suggestion-main">
+              <strong>{{ row.career.title }}</strong>
+              <span class="text-muted">
+                {% if row.goal_match %}Matches your career goal{% if row.total %} · {% endif %}{% endif %}
+                {% if row.total %}You have {{ row.matched }} of {{ row.total }} skills ({{ row.coverage }}% coverage){% endif %}
+              </span>
+            </span>
+            <span class="career-suggestion-arrow">&rarr;</span>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if skill_suggestions %}
+      <div class="profile-section">
+        <h3>Skills to consider</h3>
+        <ul class="skill-suggestion-list">
+          {% for row in skill_suggestions %}
+          <li>
+            <div>
+              <strong>{{ row.skill.name }}</strong>
+              <span class="text-muted">
+                {{ row.reasons|join:", " }}{% if row.open_jobs %} · asked for in {{ row.open_jobs }} open listing{{ row.open_jobs|pluralize }}{% endif %}
+              </span>
+            </div>
+            <form method="post" action="{% url 'profile_add_skill' row.skill.pk %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.path }}">
+              <button type="submit" class="suggestion-chip">+ Add</button>
+            </form>
+          </li>
+          {% endfor %}
+        </ul>
+        <p class="text-muted">Only add skills you actually have — they're used to match you with listings.</p>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

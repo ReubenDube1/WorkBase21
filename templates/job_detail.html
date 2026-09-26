@@ -10,6 +10,12 @@
 
     <a href="javascript:history.back()" class="btn btn-back">&larr; Back</a>
 
+    {% if not job.is_active %}
+    <div class="admin-preview-banner">
+      &#128065; Admin preview &mdash; this listing is <strong>hidden</strong>. The public sees a &ldquo;not found&rdquo; page.
+      <a href="{% url 'admin:jobs_job_change' job.pk %}">Edit in admin</a>
+    </div>
+    {% endif %}
     <div class="job-detail-card fade-in">
 
       {% if job.image %}
@@ -36,6 +42,9 @@
           <span class="job-type-badge job-type-{{ job.type }}">{{ job.type_label }}</span>
           {% if job.type == 'job' %}
             <span class="job-type-badge">{{ job.sector_label }}</span>
+          {% endif %}
+          {% if job.is_expired %}
+            <span class="job-type-badge job-type-expired">Expired</span>
           {% endif %}
           <h1>{{ job.title }}</h1>
           <p class="job-detail-company">{{ job.company.name }}</p>
@@ -65,7 +74,37 @@
           <span class="fact-label">Posted</span>
           <span class="fact-value">{{ job.created_at|date:"d M Y" }}</span>
         </div>
+        {% if job.qualification_label %}
+        <div class="fact">
+          <span class="fact-label">Qualification</span>
+          <span class="fact-value">{{ job.qualification_label }}</span>
+        </div>
+        {% endif %}
+        {% if job.experience_label %}
+        <div class="fact">
+          <span class="fact-label">Experience</span>
+          <span class="fact-value">{{ job.experience_label }}</span>
+        </div>
+        {% endif %}
+        {% if job.work_mode_label %}
+        <div class="fact">
+          <span class="fact-label">Work Mode</span>
+          <span class="fact-value">{{ job.work_mode_label }}</span>
+        </div>
+        {% endif %}
+        {% if job.industry_label %}
+        <div class="fact">
+          <span class="fact-label">Industry</span>
+          <span class="fact-value">{{ job.industry_label }}</span>
+        </div>
+        {% endif %}
       </div>
+
+      {% if job.skills.all %}
+      <div class="job-skills-tags">
+        {% for s in job.skills.all %}<span class="skill-tag">{{ s.name }}</span>{% endfor %}
+      </div>
+      {% endif %}
 
       {% with blocks=job.description_blocks %}
         {% for block in blocks %}
@@ -139,6 +178,41 @@
           </a>
         </div>
       </div>
+    </div>
+
+    <div class="save-job-bar fade-in">
+      {% if user.is_authenticated %}
+        {% if tracked and tracked.status != 'saved' %}
+          <span class="tracked-status">Tracking: <span class="status-badge status-{{ tracked.status }}">{{ tracked.get_status_display }}</span></span>
+          <a href="{% url 'application_edit' tracked.pk %}" class="btn btn-outline">Update Application</a>
+        {% else %}
+          <form method="post" action="{% url 'toggle_saved_job' job.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            {% if tracked %}
+              <button type="submit" class="btn btn-outline save-btn saved">&#9733; Saved &mdash; Remove</button>
+            {% else %}
+              <button type="submit" class="btn btn-outline save-btn">&#9734; Save Job</button>
+            {% endif %}
+          </form>
+          {% if tracked %}<a href="{% url 'application_edit' tracked.pk %}" class="btn btn-primary">Mark as Applied</a>{% endif %}
+        {% endif %}
+        <a href="{% url 'application_tracker' %}" class="save-job-link">My Applications &rarr;</a>
+      {% else %}
+        <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-outline save-btn">&#9734; Log In to Save</a>
+      {% endif %}
+    </div>
+
+    <div class="eligibility-cta fade-in">
+      <div>
+        <h3>How do you match up?</h3>
+        <p>Compare your profile's qualification, experience, skills and location against what this listing asks for.</p>
+      </div>
+      {% if user.is_authenticated %}
+        <a href="{% url 'job_eligibility' job.pk %}" class="btn btn-primary">Check My Eligibility</a>
+      {% else %}
+        <a href="{% url 'login' %}?next={% url 'job_eligibility' job.pk %}" class="btn btn-primary">Log In to Check</a>
+      {% endif %}
     </div>
 
     {% if related_jobs %}

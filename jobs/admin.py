@@ -1,8 +1,10 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from django.urls import path
+from django.urls import path, reverse
+from django.utils.safestring import mark_safe
 from django.http import JsonResponse
-from .models import Company, Job, JobApplicationLink, Review, TrendingTopic
+from django.db.models import Count
+from .models import Company, Job, JobApplicationLink, Review, TrendingTopic, PageVisit, Skill
 
 
 class JobApplicationLinkInline(admin.TabularInline):
@@ -31,13 +33,88 @@ class CompanyAdmin(admin.ModelAdmin):
     job_count.short_description = "Listings"
 
 
+@admin.register(Skill)
+class SkillAdmin(admin.ModelAdmin):
+    list_display = ('name', 'job_count', 'related_list')
+    search_fields = ('name',)
+    prepopulated_fields = {'slug': ('name',)}
+    filter_horizontal = ('related_skills',)
+
+    def related_list(self, obj):
+        return ", ".join(obj.related_skills.values_list('name', flat=True)) or "—"
+    related_list.short_description = "Related skills"
+
+    def job_count(self, obj):
+        return obj.jobs.count()
+    job_count.short_description = "Listings using this skill"
+
+
+class DeadlineStatusFilter(admin.SimpleListFilter):
+    title = 'deadline status'
+    parameter_name = 'deadline_status'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('open', 'Open (not past deadline)'),
+            ('soon', 'Closing within 7 days'),
+            ('expired', 'Past deadline'),
+            ('nodate', 'No fixed date'),
+        )
+
+    def queryset(self, request, queryset):
+        from datetime import timedelta
+        from django.db.models import Q
+        from django.utils import timezone
+        today = timezone.localdate()
+        value = self.value()
+        if value == 'open':
+            return queryset.filter(Q(deadline__isnull=True) | Q(deadline__gte=today))
+        if value == 'soon':
+            return queryset.filter(deadline__gte=today, deadline__lte=today + timedelta(days=7))
+        if value == 'expired':
+            return queryset.filter(deadline__lt=today)
+        if value == 'nodate':
+            return queryset.filter(deadline__isnull=True)
+        return queryset
+
+
+class FilterFieldsFilter(admin.SimpleListFilter):
+    """Listings missing any search-filter field won't be found by job
+    seekers filtering on that field, and can't be matched by alerts,
+    recommendations or the eligibility checker."""
+    title = 'search filters'
+    parameter_name = 'filter_fields'
+
+    def lookups(self, request, model_admin):
+        return (('missing', 'Missing some'), ('complete', 'All filled in'))
+
+    def queryset(self, request, queryset):
+        from django.db.models import Q
+        incomplete = (
+            Q(qualification_level='') | Q(experience_level='') | Q(work_mode='')
+            | Q(industry='') | Q(skills__isnull=True)
+        )
+        incomplete_ids = Job.objects.filter(incomplete).values('pk')
+        if self.value() == 'missing':
+            return queryset.filter(pk__in=incomplete_ids)
+        if self.value() == 'complete':
+            return queryset.exclude(pk__in=incomplete_ids)
+        return queryset
+
+
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
     list_display = (
         'title', 'company', 'type', 'sector', 'location', 'salary',
-        'deadline_display', 'is_active', 'created_at',
+        'deadline_display', 'views_display', 'saves_display', 'applied_display',
+        'is_active', 'created_at',
     )
-    list_filter = ('type', 'sector', 'is_active', 'company')
+    list_filter = (
+        DeadlineStatusFilter, FilterFieldsFilter,
+        'type', 'sector', 'is_active', 'company',
+        'qualification_level', 'experience_level', 'work_mode', 'industry',
+    )
+    actions = ['duplicate_listings', 'publish_listings', 'hide_listings']
     search_fields = (
         'title', 'company__name', 'location', 'description',
         'application_email',
@@ -45,9 +122,82 @@ class JobAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     list_editable = ('is_active',)
     autocomplete_fields = ('company',)
+    filter_horizontal = ('skills',)
     inlines = [JobApplicationLinkInline]
     class Media:
         js = ('js/admin_insert_article_link.js',)
+
+    def get_queryset(self, request):
+        # Saves/Applied use subqueries (see admin_views._count_subquery)
+        # rather than extra joins, so they don't multiply against the
+        # page-visit join used for Views.
+        from accounts.models import TrackedJob
+        from .admin_views import _count_subquery
+        return super().get_queryset(request).annotate(
+            _viewer_count=Count('page_visits__session_key', distinct=True),
+            _save_count=_count_subquery(TrackedJob.objects.all()),
+            _applied_count=_count_subquery(
+                TrackedJob.objects.filter(status__in=TrackedJob.APPLIED_STATUSES)
+            ),
+        )
+
+    def saves_display(self, obj):
+        return obj._save_count
+    saves_display.short_description = "Saves"
+    saves_display.admin_order_field = '_save_count'
+
+    def applied_display(self, obj):
+        return obj._applied_count
+    applied_display.short_description = "Applied"
+    applied_display.admin_order_field = '_applied_count'
+
+    @admin.action(description="Duplicate selected listings (as hidden drafts)")
+    def duplicate_listings(self, request, queryset):
+        """Copies each selected listing — text, details, filters,
+        skills and application links — as a new HIDDEN listing titled
+        '... (copy)', so it can be edited before anyone sees it."""
+        from django.utils import timezone
+        created = 0
+        for original in queryset.prefetch_related('skills', 'application_links'):
+            skills = list(original.skills.all())
+            links = list(original.application_links.all())
+            copy = Job.objects.get(pk=original.pk)
+            copy.pk = None
+            copy.id = None
+            copy._state.adding = True
+            copy.title = f"{original.title} (copy)"[:200]
+            copy.is_active = False
+            copy.created_at = timezone.now()
+            copy.save()
+            copy.skills.set(skills)
+            for link in links:
+                JobApplicationLink.objects.create(
+                    job=copy, title=link.title, url=link.url, order=link.order
+                )
+            created += 1
+        self.message_user(
+            request,
+            f"Created {created} hidden cop{'y' if created == 1 else 'ies'}. "
+            "Edit the title, deadline and details, then tick Active to publish.",
+        )
+
+    @admin.action(description="Publish selected listings (make active)")
+    def publish_listings(self, request, queryset):
+        n = queryset.update(is_active=True)
+        self.message_user(request, f"{n} listing{'s' if n != 1 else ''} published.")
+
+    @admin.action(description="Hide selected listings (make inactive)")
+    def hide_listings(self, request, queryset):
+        n = queryset.update(is_active=False)
+        self.message_user(request, f"{n} listing{'s' if n != 1 else ''} hidden.")
+
+    def views_display(self, obj):
+        url = reverse('admin_analytics') + f'#job-{obj.pk}'
+        return mark_safe(
+            f'<a href="{url}" title="See full analytics">{obj._viewer_count}</a>'
+        )
+    views_display.short_description = "Views"
+    views_display.admin_order_field = '_viewer_count'
 
     fieldsets = (
         ('Basic Information', {
@@ -85,6 +235,20 @@ class JobAdmin(admin.ModelAdmin):
         }),
         ('Details', {
             'fields': ('location', 'salary', 'deadline', 'deadline_text')
+        }),
+        ('Search Filters (optional)', {
+            'fields': (
+                'qualification_level', 'experience_level', 'work_mode',
+                'industry', 'skills', 'salary_min',
+            ),
+            'description': (
+                "All optional — leave any of these blank/unselected if "
+                "not specified. Filling them in makes this listing "
+                "discoverable through the site's advanced search "
+                "filters. 'Minimum salary' is used only for filtering "
+                "and is never shown to job seekers; the Salary field "
+                "above is still what's displayed."
+            ),
         }),
         ('How To Apply — Single Link/Email', {
             'fields': ('application_link', 'application_email'),
@@ -144,6 +308,24 @@ class ReviewAdmin(admin.ModelAdmin):
     list_filter = ('is_published', 'rating')
     search_fields = ('name', 'role', 'message')
     list_editable = ('is_published',)
+
+
+@admin.register(PageVisit)
+class PageVisitAdmin(admin.ModelAdmin):
+    """Read-only log of raw page visits — mainly for spot-checking.
+    For the aggregated numbers (totals, unique visitors, most-viewed
+    jobs, trends over time), use the Site Analytics dashboard linked
+    at the top of the admin home page instead."""
+    list_display = ('path', 'job', 'session_key', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('path', 'session_key')
+    date_hierarchy = 'created_at'
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(TrendingTopic)

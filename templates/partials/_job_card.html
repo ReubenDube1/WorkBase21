@@ -15,6 +15,7 @@
     </div>
     <span class="job-type-badge job-type-{{ job.type }}">{{ job.type_label }}</span>
   </div>
+  {% if job.is_expired %}<span class="expired-ribbon">Expired</span>{% endif %}
 
   <h3 class="job-card-title">{{ job.title }}</h3>
   <p class="job-card-company">{{ job.company.name }}</p>

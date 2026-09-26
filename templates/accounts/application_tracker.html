@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>My Applications</h1>
+    <p>Your saved jobs and the applications you're tracking, all in one place.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    {% if total %}
+    <div class="tracker-stats fade-in">
+      <div class="tracker-stat"><span class="tracker-stat-num">{{ stats.saved }}</span><span>Saved</span></div>
+      <div class="tracker-stat"><span class="tracker-stat-num">{{ stats.applied }}</span><span>Applied</span></div>
+      <div class="tracker-stat"><span class="tracker-stat-num">{{ stats.interviews }}</span><span>Interviews</span></div>
+      <div class="tracker-stat"><span class="tracker-stat-num">{{ stats.offers }}</span><span>Offers</span></div>
+      <div class="tracker-stat">
+        <span class="tracker-stat-num">{% if stats.response_rate is not None %}{{ stats.response_rate }}%{% else %}&ndash;{% endif %}</span>
+        <span>Response rate</span>
+      </div>
+    </div>
+    <p class="tracker-stats-note">
+      Based only on your own tracked applications.
+      {% if stats.by_category %}Applied by category:
+        {% for label, n in stats.by_category %}{{ label }} ({{ n }}){% if not forloop.last %}, {% endif %}{% endfor %}.
+      {% endif %}
+    </p>
+    {% endif %}
+
+    {% if reminders %}
+    <div class="tracker-reminders fade-in">
+      <h3>Coming up</h3>
+      <ul>
+        {% for t in reminders %}
+        <li class="{% if t.reminder_date < today %}overdue{% endif %}">
+          <strong>{{ t.reminder_date|date:"d M Y" }}</strong>
+          {% if t.reminder_date < today %}(overdue){% elif t.reminder_date == today %}(today){% endif %}
+          &mdash; <a href="{% url 'application_edit' t.pk %}">{{ t.job.title }}</a> at {{ t.job.company.name }}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if total %}
+    <div class="tracker-tabs">
+      <a href="{% url 'application_tracker' %}" class="{% if not active_status %}active{% endif %}">All ({{ total }})</a>
+      {% for tab in status_tabs %}
+        <a href="?status={{ tab.key }}" class="{% if active_status == tab.key %}active{% endif %}">{{ tab.label }} ({{ tab.count }})</a>
+      {% endfor %}
+    </div>
+
+    {% if items %}
+    <div class="tracker-list">
+      {% for t in items %}
+      <div class="tracker-item fade-in">
+        <div class="tracker-item-main">
+          {% if t.job.is_active %}
+          <a href="{{ t.job.get_absolute_url }}" class="tracker-item-title">{{ t.job.title }}</a>
+          {% else %}
+          <span class="tracker-item-title">{{ t.job.title }}</span> <span class="status-badge">No longer listed</span>
+          {% endif %}
+          <p class="tracker-item-company">{{ t.job.company.name }} &middot; {{ t.job.location }}</p>
+          <p class="tracker-item-meta">
+            <span class="status-badge status-{{ t.status }}">{{ t.get_status_display }}</span>
+            {% if t.applied_at %}<span>Applied {{ t.applied_at|date:"d M Y" }}</span>{% endif %}
+            <span>Deadline: {{ t.job.deadline_display }}</span>
+          </p>
+          {% if t.notes %}<p class="tracker-item-notes">{{ t.notes|truncatewords:25 }}</p>{% endif %}
+        </div>
+        <a href="{% url 'application_edit' t.pk %}" class="btn btn-outline">Update</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><h3>Nothing here</h3><p>No tracked jobs with this status.</p></div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state fade-in">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      <h3>No saved jobs yet</h3>
+      <p>Tap &ldquo;Save Job&rdquo; on any listing to start tracking it here.</p>
+      <a href="{% url 'jobs' %}" class="btn btn-primary" style="margin-top: 16px;">Browse Jobs</a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

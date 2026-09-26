@@ -1,0 +1,92 @@
+<div class="job-filters fade-in">
+  <form method="get" class="job-filters-form">
+    {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+
+    <div class="job-filters-row">
+      <div class="job-filter-field">
+        <label for="filter-qualification">Qualification</label>
+        <select name="qualification" id="filter-qualification">
+          <option value="">Any</option>
+          {% for value, label in qualification_choices %}
+          <option value="{{ value }}" {% if active_filters.qualification == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="job-filter-field">
+        <label for="filter-experience">Experience</label>
+        <select name="experience" id="filter-experience">
+          <option value="">Any</option>
+          {% for value, label in experience_choices %}
+          <option value="{{ value }}" {% if active_filters.experience == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="job-filter-field">
+        <label for="filter-work-mode">Remote/On-site</label>
+        <select name="work_mode" id="filter-work-mode">
+          <option value="">Any</option>
+          {% for value, label in work_mode_choices %}
+          <option value="{{ value }}" {% if active_filters.work_mode == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="job-filter-field">
+        <label for="filter-industry">Industry</label>
+        <select name="industry" id="filter-industry">
+          <option value="">Any</option>
+          {% for value, label in industry_choices %}
+          <option value="{{ value }}" {% if active_filters.industry == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {% if all_skills %}
+      <div class="job-filter-field">
+        <label for="filter-skill">Skill</label>
+        <select name="skill" id="filter-skill">
+          <option value="">Any</option>
+          {% for s in all_skills %}
+          <option value="{{ s.slug }}" {% if active_filters.skill == s.slug %}selected{% endif %}>{{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+
+      <div class="job-filter-field">
+        <label for="filter-salary-min">Min. salary (R)</label>
+        <input type="number" min="0" step="1000" name="salary_min" id="filter-salary-min"
+          placeholder="e.g. 15000" value="{{ active_filters.salary_min|default:'' }}">
+      </div>
+    </div>
+
+    <div class="job-filters-actions">
+      <button type="submit" class="btn btn-primary">Apply Filters</button>
+      {% if active_filters %}
+      <a href="{{ request.path }}{% if query %}?q={{ query }}{% endif %}" class="job-filters-clear">Clear filters</a>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if can_save_search %}
+  <div class="save-search-row">
+    {% if user.is_authenticated %}
+    <form method="post" action="{% url 'saved_search_create' %}" class="save-search-form">
+      {% csrf_token %}
+      <input type="hidden" name="results_path" value="{{ request.path }}">
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <input type="hidden" name="job_type" value="{{ search_scope.job_type }}">
+      <input type="hidden" name="sector" value="{{ search_scope.sector }}">
+      {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+      {% for key, value in active_filters.items %}<input type="hidden" name="f_{{ key }}" value="{{ value }}">{% endfor %}
+      <button type="submit" class="save-search-btn">&#128276; Save this search &amp; get alerts</button>
+    </form>
+    <span class="save-search-hint">Saves the filters currently applied.</span>
+    {% else %}
+    <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" class="save-search-btn">&#128276; Log in to get alerts for this search</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>

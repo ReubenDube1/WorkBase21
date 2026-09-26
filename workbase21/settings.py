@@ -59,6 +59,7 @@ INSTALLED_APPS = [
 
     # Local apps
     'jobs',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -70,6 +71,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # Logs page visits for the admin's Site Analytics dashboard. Must
+    # come after SessionMiddleware (needs request.session).
+    'jobs.middleware.VisitTrackingMiddleware',
 ]
 
 ROOT_URLCONF = 'workbase21.urls'
@@ -88,6 +93,8 @@ TEMPLATES = [
                 # Custom context processor so job type nav links are
                 # available on every single page (used in base.html)
                 'jobs.context_processors.job_types',
+                'jobs.context_processors.filter_choices',
+                'accounts.context_processors.job_alert_count',
             ],
         },
     },
@@ -127,6 +134,11 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
+
+# Job-seeker accounts (Phase 3) — where to send people for/after login.
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'profile'
+LOGOUT_REDIRECT_URL = 'welcome'
 
 
 # Internationalization
@@ -198,6 +210,34 @@ SITE_DESCRIPTION = (
     'WorkBase21 connects South African job seekers with jobs, internships, '
     'learnerships and bursaries.'
 )
+
+
+# ---------------------------------------------------------------------------
+# Email (free): sent through a Gmail account using a Google "App password".
+# Used for password reset emails and Contact-page messages.
+#
+# On Render, set these environment variables:
+#   EMAIL_HOST_USER      = the Gmail address, e.g. workbase21@gmail.com
+#   EMAIL_HOST_PASSWORD  = the 16-character App password (NOT the normal
+#                          Gmail password)
+# If they're missing (e.g. on your laptop), emails are printed in the
+# terminal instead of being sent — handy for testing, nothing breaks.
+# ---------------------------------------------------------------------------
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '').replace(' ', '')
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_TIMEOUT = 20
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = f"WorkBase21 <{EMAIL_HOST_USER or SITE_EMAIL}>"
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# Password reset links stay valid for 1 hour.
+PASSWORD_RESET_TIMEOUT = 60 * 60
 
 
 LOGGING = {

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>{{ career.icon }} {{ career.title }}</h1>
+    {% if career.description %}<p>{{ career.description }}</p>{% endif %}
+    <a href="{% url 'careers' %}" class="career-back-link">&larr; All Career Paths</a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow-content">
+
+    {% if previous_paths or next_paths %}
+    <div class="profile-section">
+      <h3>Career path map</h3>
+      <div class="career-map">
+        {% if previous_paths %}
+        <div class="career-map-col">
+          <span class="career-map-label">Often comes from</span>
+          {% for p in previous_paths %}<a href="{{ p.get_absolute_url }}" class="career-map-node">{{ p.icon }} {{ p.title }}</a>{% endfor %}
+        </div>
+        <span class="career-map-arrow" aria-hidden="true">&rarr;</span>
+        {% endif %}
+        <div class="career-map-col">
+          <span class="career-map-label">This career</span>
+          <span class="career-map-node career-map-current">{{ career.icon }} {{ career.title }}</span>
+        </div>
+        {% if next_paths %}
+        <span class="career-map-arrow" aria-hidden="true">&rarr;</span>
+        <div class="career-map-col">
+          <span class="career-map-label">Can lead to</span>
+          {% for p in next_paths %}<a href="{{ p.get_absolute_url }}" class="career-map-node">{{ p.icon }} {{ p.title }}</a>{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if career.qualifications.all %}
+    <div class="profile-section">
+      <h3>Typical Qualifications</h3>
+      <div class="job-skills-tags">
+        {% for q in career.qualifications.all %}<span class="skill-tag">{{ q.name }}</span>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if career.skills.all %}
+    <div class="profile-section">
+      <h3>Skills This Career Uses</h3>
+      <div class="job-skills-tags">
+        {% for s in career.skills.all %}<span class="skill-tag">{{ s.name }}</span>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if career.milestone_list %}
+    <div class="profile-section">
+      <h3>Milestones</h3>
+      <ol class="career-milestones">
+        {% for m in career.milestone_list %}<li>{{ m }}</li>{% endfor %}
+      </ol>
+    </div>
+    {% endif %}
+
+    <div class="profile-section">
+      <h3>Skills Gap</h3>
+      {% if user.is_authenticated %}
+        {% if not gap.has_target_skills %}
+          <p class="text-muted">This career path doesn't list specific skills yet, so there's nothing to compare.</p>
+        {% else %}
+          <div class="eligibility-summary">
+            <span class="eligibility-summary-count">{{ gap.coverage_pct }}%</span>
+            <span>skill coverage ({{ gap.matched_count }} of {{ gap.total }}) — not a probability of landing this career, just how much of the listed skill set your profile already covers</span>
+          </div>
+          {% if gap.matched %}
+          <div class="eligibility-group eligibility-matched">
+            <h3>You already have</h3>
+            <div class="job-skills-tags">{% for s in gap.matched %}<span class="skill-tag">{{ s.name }}</span>{% endfor %}</div>
+          </div>
+          {% endif %}
+          {% if gap.missing %}
+          <div class="eligibility-group eligibility-unmet">
+            <h3>Worth building</h3>
+            <div class="job-skills-tags">{% for s in gap.missing %}<span class="skill-tag">{{ s.name }}</span>{% endfor %}</div>
+          </div>
+          {% endif %}
+        {% endif %}
+      {% else %}
+        <p class="text-muted">
+          <a href="{% url 'login' %}?next={{ request.path }}">Log in</a> to see how your skills compare to this career path.
+        </p>
+      {% endif %}
+    </div>
+
+    {% if related_jobs %}
+    <div class="profile-section">
+      <h3>Related WorkBase21 Jobs</h3>
+      <div class="job-grid">
+        {% for job in related_jobs %}
+          {% include "partials/_job_card.html" %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

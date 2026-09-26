@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header"><div class="container"><h1>Delete Your Account</h1></div></section>
+<section class="section"><div class="container narrow-content">
+  <div class="profile-card danger-zone fade-in">
+    <p><strong>This permanently deletes:</strong></p>
+    <ul class="delete-list">
+      <li>your account ({{ user.username }}) and login</li>
+      <li>your profile, skills and qualifications</li>
+      <li>your saved and tracked jobs, including notes</li>
+      <li>your saved searches and job alerts</li>
+    </ul>
+    <p class="text-muted">This can't be undone. Want a copy first? <a href="{% url 'account_download' %}">Download your data</a>.</p>
+    <form method="post" class="contact-form" style="margin-top:20px;">
+      {% csrf_token %}
+      {% include "accounts/_form_fields.html" %}
+      <div class="form-actions">
+        <button type="submit" class="btn btn-danger btn-lg">Permanently Delete My Account</button>
+        <a href="{% url 'account_settings' %}" class="btn btn-outline btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div></section>
+{% endblock %}

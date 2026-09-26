@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header"><div class="container">
+  <h1>Account Settings</h1>
+  <p>Manage your password and your personal information.</p>
+</div></section>
+<section class="section"><div class="container narrow-content">
+
+  <div class="profile-card fade-in">
+    <h2 class="suggestions-title">Account</h2>
+    <div class="profile-facts" style="margin-top:14px;">
+      <div class="fact"><span class="fact-label">Username</span><span class="fact-value">{{ user.username }}</span></div>
+      <div class="fact"><span class="fact-label">Email</span><span class="fact-value">{{ user.email|default:"Not set" }}</span></div>
+      <div class="fact"><span class="fact-label">Member since</span><span class="fact-value">{{ user.date_joined|date:"d M Y" }}</span></div>
+    </div>
+    <div class="settings-actions">
+      <a href="{% url 'password_change' %}" class="btn btn-outline">Change Password</a>
+      <a href="{% url 'profile_edit' %}" class="btn btn-outline">Edit Profile</a>
+    </div>
+  </div>
+
+  <div class="profile-card fade-in suggestions-card">
+    <h2 class="suggestions-title">Your data</h2>
+    <p class="text-muted">Download a copy of everything WorkBase21 stores about your account: your profile, saved and tracked jobs (including notes) and saved searches.</p>
+    <div class="settings-actions">
+      <a href="{% url 'account_download' %}" class="btn btn-outline">Download My Data</a>
+      <a href="{% url 'privacy' %}" class="btn btn-outline">Privacy Policy</a>
+    </div>
+  </div>
+
+  <div class="profile-card fade-in suggestions-card danger-zone">
+    <h2 class="suggestions-title">Delete account</h2>
+    <p class="text-muted">Permanently deletes your account, profile, saved and tracked jobs, notes and saved searches. This can't be undone.</p>
+    <div class="settings-actions">
+      <a href="{% url 'account_delete' %}" class="btn btn-danger">Delete My Account</a>
+    </div>
+  </div>
+
+</div></section>
+{% endblock %}

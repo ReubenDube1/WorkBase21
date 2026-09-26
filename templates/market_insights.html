@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>Job Market Insights</h1>
+    <p>
+      Live trends calculated from WorkBase21's own active listings — not a
+      national survey. Sample size: <strong>{{ total }} active listing{{ total|pluralize }}</strong>{% if earliest and latest %}, posted between {{ earliest|date:"d M Y" }} and {{ latest|date:"d M Y" }}{% endif %}.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container market-insights-grid">
+
+    {% if top_skills %}
+    <div class="insight-card fade-in">
+      <h2>Most Requested Skills</h2>
+      <ul class="insight-bars">
+        {% for row in top_skills %}
+        <li>
+          <div class="insight-bar-label"><span>{{ row.name }}</span><span>{{ row.count }}</span></div>
+          <div class="insight-bar-track"><div class="insight-bar-fill" style="width:{{ row.pct }}%"></div></div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if top_locations %}
+    <div class="insight-card fade-in">
+      <h2>Jobs by Location</h2>
+      <ul class="insight-bars">
+        {% for row in top_locations %}
+        <li>
+          <div class="insight-bar-label"><span>{{ row.location }}</span><span>{{ row.count }}</span></div>
+          <div class="insight-bar-track"><div class="insight-bar-fill" style="width:{{ row.pct }}%"></div></div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if by_category %}
+    <div class="insight-card fade-in">
+      <h2>Listings by Category</h2>
+      <ul class="insight-bars">
+        {% for row in by_category %}
+        <li>
+          <div class="insight-bar-label"><span>{{ row.label }}</span><span>{{ row.count }}</span></div>
+          <div class="insight-bar-track"><div class="insight-bar-fill" style="width:{{ row.pct }}%"></div></div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if by_sector %}
+    <div class="insight-card fade-in">
+      <h2>Jobs: Public vs Private Sector</h2>
+      <ul class="insight-bars">
+        {% for row in by_sector %}
+        <li>
+          <div class="insight-bar-label"><span>{{ row.label }}</span><span>{{ row.count }}</span></div>
+          <div class="insight-bar-track"><div class="insight-bar-fill" style="width:{{ row.pct }}%"></div></div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if by_industry %}
+    <div class="insight-card fade-in">
+      <h2>Demand by Industry</h2>
+      <ul class="insight-bars">
+        {% for row in by_industry %}
+        <li>
+          <div class="insight-bar-label"><span>{{ row.label }}</span><span>{{ row.count }}</span></div>
+          <div class="insight-bar-track"><div class="insight-bar-fill" style="width:{{ row.pct }}%"></div></div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if by_experience %}
+    <div class="insight-card fade-in">
+      <h2>Experience Requirements</h2>
+      <ul class="insight-bars">
+        {% for row in by_experience %}
+        <li>
+          <div class="insight-bar-label"><span>{{ row.label }}</span><span>{{ row.count }}</span></div>
+          <div class="insight-bar-track"><div class="insight-bar-fill" style="width:{{ row.pct }}%"></div></div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if by_qualification %}
+    <div class="insight-card fade-in">
+      <h2>Qualification Demand</h2>
+      <ul class="insight-bars">
+        {% for row in by_qualification %}
+        <li>
+          <div class="insight-bar-label"><span>{{ row.label }}</span><span>{{ row.count }}</span></div>
+          <div class="insight-bar-track"><div class="insight-bar-fill" style="width:{{ row.pct }}%"></div></div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if by_work_mode %}
+    <div class="insight-card fade-in">
+      <h2>Remote vs On-site</h2>
+      <ul class="insight-bars">
+        {% for row in by_work_mode %}
+        <li>
+          <div class="insight-bar-label"><span>{{ row.label }}</span><span>{{ row.count }}</span></div>
+          <div class="insight-bar-track"><div class="insight-bar-fill" style="width:{{ row.pct }}%"></div></div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+  </div>
+
+  {% if not total %}
+  <div class="container">
+    <div class="empty-state fade-in">
+      <h3>Not enough data yet</h3>
+      <p>Insights will appear here once there are active listings on WorkBase21.</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="container">
+    <p class="market-insights-note">
+      These figures reflect only jobs currently listed on WorkBase21 and the optional filter fields admins fill in for each listing — they are not a comprehensive national labour-market survey.
+    </p>
+  </div>
+</section>
+{% endblock %}

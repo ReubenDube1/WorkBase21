@@ -25,6 +25,39 @@ class Company(models.Model):
         return self.name
 
 
+class Skill(models.Model):
+    """A canonical skill, reusable across jobs for filtering and (in a
+    later phase) skills-matching. Kept as a simple flat list managed
+    from the admin — no need for job posters to type free text that
+    won't match up."""
+
+    name = models.CharField(max_length=80, unique=True)
+    slug = models.SlugField(max_length=90, unique=True, blank=True)
+    related_skills = models.ManyToManyField(
+        'self', blank=True, symmetrical=True,
+        help_text=(
+            "Skills that commonly go together, e.g. Statistics ↔ Data Analysis. "
+            "Works both ways automatically. Used to suggest skills to job seekers."
+        ),
+    )
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base = slugify(self.name)[:80] or 'skill'
+            slug, n = base, 2
+            while Skill.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base}-{n}"
+                n += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+
 class Job(models.Model):
     """A single opportunity: job, internship, learnership, or bursary."""
 
@@ -47,6 +80,49 @@ class Job(models.Model):
         (PRIVATE, 'Private Sector'),
     ]
 
+    QUALIFICATION_CHOICES = [
+        ('none', 'No formal qualification required'),
+        ('matric', 'Matric / Grade 12'),
+        ('certificate', 'Certificate'),
+        ('diploma', 'Diploma'),
+        ('degree', "Bachelor's Degree"),
+        ('honours', 'Honours Degree'),
+        ('masters', "Master's Degree"),
+        ('doctorate', 'Doctorate'),
+    ]
+
+    EXPERIENCE_CHOICES = [
+        ('entry', 'Entry-level / No experience'),
+        ('1_2', '1–2 years'),
+        ('3_5', '3–5 years'),
+        ('5_plus', '5+ years'),
+        ('senior', 'Senior / Executive'),
+    ]
+
+    WORK_MODE_CHOICES = [
+        ('onsite', 'On-site'),
+        ('remote', 'Remote'),
+        ('hybrid', 'Hybrid'),
+    ]
+
+    INDUSTRY_CHOICES = [
+        ('it', 'IT & Technology'),
+        ('finance', 'Finance & Accounting'),
+        ('healthcare', 'Healthcare'),
+        ('education', 'Education & Training'),
+        ('engineering', 'Engineering'),
+        ('retail', 'Retail & Sales'),
+        ('government', 'Government & Public Sector'),
+        ('marketing', 'Marketing & Communications'),
+        ('agriculture', 'Agriculture'),
+        ('construction', 'Construction & Built Environment'),
+        ('logistics', 'Logistics & Supply Chain'),
+        ('hospitality', 'Hospitality & Tourism'),
+        ('legal', 'Legal'),
+        ('manufacturing', 'Manufacturing'),
+        ('other', 'Other'),
+    ]
+
     title = models.CharField(max_length=200)
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name='jobs'
@@ -59,6 +135,40 @@ class Job(models.Model):
         help_text=(
             "Only used for the 'Jobs' category — lets job seekers filter "
             "between Public Sector and Private Sector roles."
+        )
+    )
+
+    # --- Structured filter fields (all optional) --------------------
+    # Left blank ("Not specified") a listing simply won't be narrowed
+    # out by that particular filter — existing jobs keep working with
+    # nothing to fill in.
+    qualification_level = models.CharField(
+        max_length=20, choices=QUALIFICATION_CHOICES, blank=True,
+        help_text="Powers the 'Qualification' search filter. Leave blank if not specified."
+    )
+    experience_level = models.CharField(
+        max_length=20, choices=EXPERIENCE_CHOICES, blank=True,
+        help_text="Powers the 'Experience' search filter. Leave blank if not specified."
+    )
+    work_mode = models.CharField(
+        max_length=10, choices=WORK_MODE_CHOICES, blank=True,
+        help_text="Powers the 'Remote/On-site' search filter. Leave blank if not specified."
+    )
+    industry = models.CharField(
+        max_length=20, choices=INDUSTRY_CHOICES, blank=True,
+        help_text="Powers the 'Industry' search filter. Leave blank if not specified."
+    )
+    skills = models.ManyToManyField(
+        Skill, blank=True, related_name='jobs',
+        help_text="Powers the 'Skill' search filter and the Job-Market Analytics 'most requested skills' chart."
+    )
+    salary_min = models.PositiveIntegerField(
+        blank=True, null=True,
+        verbose_name="Minimum salary (for filtering only)",
+        help_text=(
+            "Optional whole number, e.g. 15000. Only used to power the "
+            "'minimum salary' search filter — it is NOT shown to job "
+            "seekers; the Salary field above is still what's displayed."
         )
     )
 
@@ -202,6 +312,22 @@ class Job(models.Model):
     @property
     def sector_label(self):
         return dict(self.SECTOR_CHOICES).get(self.sector, self.sector)
+
+    @property
+    def qualification_label(self):
+        return dict(self.QUALIFICATION_CHOICES).get(self.qualification_level, '')
+
+    @property
+    def experience_label(self):
+        return dict(self.EXPERIENCE_CHOICES).get(self.experience_level, '')
+
+    @property
+    def work_mode_label(self):
+        return dict(self.WORK_MODE_CHOICES).get(self.work_mode, '')
+
+    @property
+    def industry_label(self):
+        return dict(self.INDUSTRY_CHOICES).get(self.industry, '')
 
     @property
     def description_blocks(self):
@@ -396,3 +522,30 @@ class TrendingTopic(models.Model):
                 self.body, self.body2, self.body3, self.body4, self.body5,
             ] if block
         ]
+
+
+class PageVisit(models.Model):
+    """One logged page view, written by VisitTrackingMiddleware for every
+    real page request (static/media/admin/ckeditor excluded). Powers the
+    'Site Visits' analytics screen in the admin — total visits, unique
+    visitors, busiest pages, and traffic over time.
+
+    Kept deliberately minimal for privacy: no IP addresses are stored,
+    just the anonymous session key Django already issues."""
+
+    path = models.CharField(max_length=500, db_index=True)
+    session_key = models.CharField(max_length=40, blank=True, db_index=True)
+    job = models.ForeignKey(
+        Job, on_delete=models.SET_NULL, blank=True, null=True,
+        related_name='page_visits',
+        help_text="Set automatically when the visited page was a job detail page."
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Site Visit"
+        verbose_name_plural = "Site Visits"
+
+    def __str__(self):
+        return f"{self.path} @ {self.created_at:%Y-%m-%d %H:%M}"

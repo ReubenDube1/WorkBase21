@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>Edit My Profile</h1>
+    <p>This helps us personalize the site for you — all fields are optional.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow-content">
+    <form method="post" class="contact-form fade-in">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<p class="form-help">{{ field.help_text }}</p>{% endif %}
+
+          {% if field.name == 'skills_text' and skill_suggestions %}
+          <div class="suggestion-chips" data-target="id_skills_text">
+            <span class="suggestion-label">Tap to add:</span>
+            {% for s in skill_suggestions %}<button type="button" class="suggestion-chip">{{ s.name }}</button>{% endfor %}
+          </div>
+          {% endif %}
+
+          {% if field.name == 'qualifications_text' and qualification_suggestions %}
+          <div class="suggestion-chips" data-target="id_qualifications_text">
+            <span class="suggestion-label">Tap to add:</span>
+            {% for q in qualification_suggestions %}<button type="button" class="suggestion-chip">{{ q.name }}</button>{% endfor %}
+          </div>
+          {% endif %}
+
+          {% if field.errors %}
+            <p class="form-error">{{ field.errors|striptags }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-lg">Save Profile</button>
+        <a href="{% url 'profile' %}" class="btn btn-outline btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.querySelectorAll('.suggestion-chips').forEach(function (group) {
+    var input = document.getElementById(group.getAttribute('data-target'));
+    if (!input) return;
+    group.querySelectorAll('.suggestion-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        var name = chip.textContent.trim();
+        var current = input.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        var exists = current.some(function (s) { return s.toLowerCase() === name.toLowerCase(); });
+        if (!exists) {
+          current.push(name);
+          input.value = current.join(', ');
+        }
+        chip.classList.add('added');
+      });
+    });
+  });
+</script>
+{% endblock %}

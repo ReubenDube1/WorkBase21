@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>Create Your Account</h1>
+    <p>Free for job seekers. Set up your profile so we can personalize things for you.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow-content">
+    <form method="post" class="contact-form fade-in">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<p class="form-help">{{ field.help_text }}</p>{% endif %}
+          {% if field.errors %}
+            <p class="form-error">{{ field.errors|striptags }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
+    </form>
+    <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+  </div>
+</section>
+{% endblock %}

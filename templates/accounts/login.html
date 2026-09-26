@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>Log In</h1>
+    <p>Welcome back.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow-content">
+    <form method="post" class="contact-form fade-in">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+            <p class="form-error">{{ field.errors|striptags }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+      {% if form.non_field_errors %}
+        <p class="form-error">{{ form.non_field_errors|striptags }}</p>
+      {% endif %}
+      <button type="submit" class="btn btn-primary btn-lg">Log In</button>
+      <a href="{% url 'password_reset' %}" class="forgot-link">Forgot your password?</a>
+    </form>
+    <p class="auth-switch">Don't have an account yet? <a href="{% url 'register' %}">Sign up</a></p>
+  </div>
+</section>
+{% endblock %}

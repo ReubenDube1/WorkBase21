@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>Eligibility Check</h1>
+    <p>For <strong>{{ job.title }}</strong> at {{ job.company.name }}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow-content">
+    <div class="eligibility-disclaimer">
+      This compares your profile against what this listing states — it isn't a
+      prediction of whether {{ job.company.name }} will accept or reject you,
+      and it only sees what's filled in on both sides.
+    </div>
+
+    <div class="eligibility-summary">
+      <span class="eligibility-summary-count">{{ result.matched_count }} of {{ result.checked_count }}</span>
+      <span>checkable criteria met</span>
+    </div>
+
+    {% if result.matched %}
+    <div class="eligibility-group eligibility-matched">
+      <h3>Matches</h3>
+      <ul>{% for item in result.matched %}<li>{{ item }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    {% if result.unmet %}
+    <div class="eligibility-group eligibility-unmet">
+      <h3>Gaps</h3>
+      <ul>{% for item in result.unmet %}<li>{{ item }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    {% if result.unclear %}
+    <div class="eligibility-group eligibility-unclear">
+      <h3>Couldn't check</h3>
+      <ul>{% for item in result.unclear %}<li>{{ item }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    <div class="eligibility-actions">
+      <a href="{{ job.get_absolute_url }}" class="btn btn-outline btn-lg">Back to Listing</a>
+      <a href="{% url 'profile_edit' %}" class="btn btn-primary btn-lg">Update My Profile</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

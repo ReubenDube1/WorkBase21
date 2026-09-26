@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <h1>Update Application</h1>
+    <p><a href="{{ tracked.job.get_absolute_url }}">{{ tracked.job.title }}</a> at {{ tracked.job.company.name }}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container narrow-content">
+    <form method="post" class="contact-form fade-in">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<p class="form-help">{{ field.help_text }}</p>{% endif %}
+          {% if field.errors %}<p class="form-error">{{ field.errors|striptags }}</p>{% endif %}
+        </div>
+      {% endfor %}
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-lg">Save Changes</button>
+        <a href="{% url 'application_tracker' %}" class="btn btn-outline btn-lg">Cancel</a>
+      </div>
+    </form>
+
+    <form method="post" action="{% url 'application_delete' tracked.pk %}" class="tracker-delete-form"
+          onsubmit="return confirm('Remove this job from your tracker? Your notes will be deleted.');">
+      {% csrf_token %}
+      <button type="submit" class="tracker-delete-btn">Remove from tracker</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

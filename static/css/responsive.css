@@ -10,8 +10,16 @@
    Small tablet / large mobile (<= 860px) — mobile nav kicks in
    ========================================================================== */
 @media (max-width: 860px) {
+  .tracker-stats { grid-template-columns: repeat(3, 1fr); }
   .nav-search { display: none; }
   .hamburger { display: flex; }
+  .mic-btn { display: none; }
+  /* These are more specific than the bare .mic-btn rule above and
+     would otherwise win the cascade and keep the mic button visible
+     on mobile — .hero-search .mic-btn in particular was doing
+     exactly that on the homepage. Override each explicitly. */
+  .hero-search .mic-btn,
+  .nav-search .mic-btn { display: none; }
 
   .main-nav {
     position: fixed;
@@ -22,10 +30,11 @@
     box-shadow: var(--shadow-md);
     max-height: 0;
     overflow: hidden;
+    overflow-y: auto;
     transition: max-height var(--transition);
     z-index: 99;
   }
-  .main-nav.open { max-height: 400px; }
+  .main-nav.open { max-height: 90vh; }
 
   .nav-links {
     flex-direction: column;
@@ -38,6 +47,10 @@
   .nav-links a::after { display: none; }
 
   .job-detail-header { flex-direction: column; align-items: flex-start; }
+
+  .auth-links { gap: 8px; }
+  .auth-link { font-size: 0.78rem; }
+  .auth-link-cta { padding: 6px 10px; }
 }
 
 /* ==========================================================================
@@ -64,6 +77,48 @@
 
   .job-detail-actions { flex-direction: column; }
   .job-detail-actions .btn { width: 100%; }
+
+  /* Cards built in later phases (market insights, profile,
+     eligibility) — trim padding and stack actions full-width so
+     nothing gets tight or clipped on narrow phones. */
+  .market-insights-grid { grid-template-columns: 1fr; }
+  .insight-card { padding: 20px; }
+
+  .profile-card { padding: 22px; }
+  .profile-card-header .btn { margin-left: 0; width: 100%; }
+  .profile-facts { grid-template-columns: 1fr 1fr; }
+
+  .eligibility-cta { padding: 20px; flex-direction: column; align-items: stretch; }
+  .eligibility-cta .btn { width: 100%; text-align: center; }
+  .eligibility-actions { flex-direction: column; }
+  .eligibility-actions .btn { width: 100%; text-align: center; }
+
+  .career-card { padding: 20px; }
+  .profile-quicklinks { flex-direction: column; }
+  .profile-quicklinks .btn { width: 100%; text-align: center; }
+  .form-actions { flex-direction: column; }
+  .form-actions .btn { width: 100%; text-align: center; }
+
+  .save-job-bar { flex-direction: column; align-items: stretch; }
+  .save-job-bar .btn, .save-job-bar form, .save-job-bar button { width: 100%; text-align: center; }
+  .save-job-link { margin-left: 0; text-align: center; }
+  .tracker-stats { grid-template-columns: repeat(2, 1fr); }
+  .tracker-item { flex-direction: column; align-items: stretch; }
+  .tracker-item .btn { width: 100%; text-align: center; }
+
+  .save-search-row { flex-direction: column; align-items: stretch; }
+  .save-search-form, .save-search-btn { width: 100%; text-align: center; }
+  .alerts-summary { flex-direction: column; align-items: stretch; }
+  .alerts-summary .btn { width: 100%; text-align: center; }
+  .alert-card { padding: 18px; }
+  .alert-card-header .btn { width: 100%; text-align: center; }
+
+  .career-map { flex-direction: column; align-items: stretch; }
+  .career-map-arrow { transform: rotate(90deg); align-self: center; }
+  .career-map-node { display: block; text-align: center; }
+
+  .settings-actions { flex-direction: column; }
+  .settings-actions .btn { width: 100%; text-align: center; }
 }
 
 /* ==========================================================================
