@@ -7,20 +7,12 @@
 }
 
 /* ==========================================================================
-   Small tablet / large mobile (<= 860px) — mobile nav kicks in
+   Collapsed (hamburger) menu: phones, tablets and small laptops (<= 1100px).
+   Above 1100px the full menu, search box and account links fit in one row;
+   below it they don't (they overflowed at 1024px), so the menu collapses.
    ========================================================================== */
-@media (max-width: 860px) {
-  .tracker-stats { grid-template-columns: repeat(3, 1fr); }
-  .nav-search { display: none; }
+@media (max-width: 1100px) {
   .hamburger { display: flex; }
-  .mic-btn { display: none; }
-  /* These are more specific than the bare .mic-btn rule above and
-     would otherwise win the cascade and keep the mic button visible
-     on mobile — .hero-search .mic-btn in particular was doing
-     exactly that on the homepage. Override each explicitly. */
-  .hero-search .mic-btn,
-  .nav-search .mic-btn { display: none; }
-
   .main-nav {
     position: fixed;
     top: var(--header-height);
@@ -45,6 +37,26 @@
   .nav-links li:last-child { border-bottom: none; }
   .nav-links a { display: block; padding: 14px 0; }
   .nav-links a::after { display: none; }
+
+  /* Account links move from the header bar into the menu, first in line. */
+  .nav-account-item { display: block; }
+  .auth-link-wide { display: none; }
+}
+
+/* ==========================================================================
+   Small tablet / large mobile (<= 860px) — header search box hidden
+   ========================================================================== */
+@media (max-width: 860px) {
+  .tracker-stats { grid-template-columns: repeat(3, 1fr); }
+  .nav-search { display: none; }
+  .mic-btn { display: none; }
+  /* These are more specific than the bare .mic-btn rule above and
+     would otherwise win the cascade and keep the mic button visible
+     on mobile — .hero-search .mic-btn in particular was doing
+     exactly that on the homepage. Override each explicitly. */
+  .hero-search .mic-btn,
+  .nav-search .mic-btn { display: none; }
+
 
   .job-detail-header { flex-direction: column; align-items: flex-start; }
 
@@ -129,3 +141,21 @@
   .hero h1 { font-size: 1.9rem; }
   .job-detail-facts { grid-template-columns: 1fr; }
 }
+
+/* ==========================================================================
+   Very small phones (<= 400px, e.g. 320-360px wide): tighten the header so
+   the logo, account buttons and hamburger all fit (at 320px the hamburger
+   used to be pushed off-screen).
+   ========================================================================== */
+@media (max-width: 400px) {
+  .container { padding: 0 16px; }
+  .header-inner { gap: 10px; }
+  .logo { gap: 8px; }
+  .logo-img { height: 30px; width: 30px; }
+  .logo-text { font-size: 1.05rem; }
+  .header-actions { gap: 10px; }
+  .auth-links { gap: 8px; }
+  .auth-link { font-size: 0.76rem; }
+  .auth-link-cta { padding: 6px 9px; }
+}
+

@@ -258,5 +258,9 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': False,
         },
+        # Our own apps: password reset / contact email diagnostics show up
+        # in the Render logs.
+        'accounts': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'jobs': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
     },
 }

@@ -1,0 +1,8 @@
+<div class="form-group{% if field.errors %} has-error{% endif %}">
+  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+  {{ field }}
+  {% if field.errors %}<p class="form-error" id="{{ field.auto_id }}_error">{% for error in field.errors %}{{ error }}{% if not forloop.last %} {% endif %}{% endfor %}</p>{% endif %}
+  {% if form.errors and field.field.widget.input_type == 'password' %}<p class="form-error-note">For your security, password boxes are emptied when there's a problem &mdash; please type it again.</p>{% endif %}
+  {% if field.help_text %}<div class="form-help">{{ field.help_text|safe }}</div>{% endif %}
+  {{ extra|default:"" }}
+</div>

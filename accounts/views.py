@@ -1,5 +1,7 @@
 import json
+import logging
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth import views as auth_views
@@ -23,6 +25,13 @@ from .forms import (
 from .models import CareerPath, SavedSearch, TrackedJob, UserProfile
 from .context_processors import ALERT_COUNT_SESSION_KEY
 from jobs.throttle import client_ip, over_limit
+
+logger = logging.getLogger(__name__)
+
+
+def mask_email(email):
+    name, _, domain = (email or '').partition('@')
+    return (name[:2] + '***@' + domain) if domain else '***'
 
 
 
@@ -392,7 +401,16 @@ class PasswordResetView(auth_views.PasswordResetView):
         ip_limited = over_limit(f'pwreset:ip:{client_ip(self.request)}', 10)
         email_limited = over_limit(f'pwreset:email:{email}', 3)
         if ip_limited or email_limited:
+            logger.info("Password reset for %s skipped: rate limit reached (%s).",
+                        mask_email(email), 'device' if ip_limited else 'email address')
             return redirect(self.success_url)
+        if not any(True for _ in form.get_users(email)):
+            # Django sends nothing in this case, silently, on purpose.
+            logger.info("Password reset for %s: no active account with that email "
+                        "(check the email on the account in the admin).", mask_email(email))
+        else:
+            logger.info("Password reset email being sent to %s via %s.",
+                        mask_email(email), settings.EMAIL_BACKEND.rsplit('.', 2)[-2])
         return super().form_valid(form)
 
 

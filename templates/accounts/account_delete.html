@@ -13,7 +13,7 @@
     <p class="text-muted">This can't be undone. Want a copy first? <a href="{% url 'account_download' %}">Download your data</a>.</p>
     <form method="post" class="contact-form" style="margin-top:20px;">
       {% csrf_token %}
-      {% include "accounts/_form_fields.html" %}
+      {% include "partials/_form_fields.html" %}
       <div class="form-actions">
         <button type="submit" class="btn btn-danger btn-lg">Permanently Delete My Account</button>
         <a href="{% url 'account_settings' %}" class="btn btn-outline btn-lg">Cancel</a>

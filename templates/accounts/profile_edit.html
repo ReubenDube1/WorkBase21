@@ -11,30 +11,21 @@
   <div class="container narrow-content">
     <form method="post" class="contact-form fade-in">
       {% csrf_token %}
+      {% include "partials/_form_error_summary.html" %}
       {% for field in form %}
-        <div class="form-group">
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% if field.help_text %}<p class="form-help">{{ field.help_text }}</p>{% endif %}
-
-          {% if field.name == 'skills_text' and skill_suggestions %}
-          <div class="suggestion-chips" data-target="id_skills_text">
-            <span class="suggestion-label">Tap to add:</span>
-            {% for s in skill_suggestions %}<button type="button" class="suggestion-chip">{{ s.name }}</button>{% endfor %}
-          </div>
-          {% endif %}
-
-          {% if field.name == 'qualifications_text' and qualification_suggestions %}
-          <div class="suggestion-chips" data-target="id_qualifications_text">
-            <span class="suggestion-label">Tap to add:</span>
-            {% for q in qualification_suggestions %}<button type="button" class="suggestion-chip">{{ q.name }}</button>{% endfor %}
-          </div>
-          {% endif %}
-
-          {% if field.errors %}
-            <p class="form-error">{{ field.errors|striptags }}</p>
-          {% endif %}
+        {% include "partials/_form_field.html" %}
+        {% if field.name == 'skills_text' and skill_suggestions %}
+        <div class="suggestion-chips" data-target="id_skills_text">
+          <span class="suggestion-label">Tap to add:</span>
+          {% for s in skill_suggestions %}<button type="button" class="suggestion-chip">{{ s.name }}</button>{% endfor %}
         </div>
+        {% endif %}
+        {% if field.name == 'qualifications_text' and qualification_suggestions %}
+        <div class="suggestion-chips" data-target="id_qualifications_text">
+          <span class="suggestion-label">Tap to add:</span>
+          {% for q in qualification_suggestions %}<button type="button" class="suggestion-chip">{{ q.name }}</button>{% endfor %}
+        </div>
+        {% endif %}
       {% endfor %}
       <div class="form-actions">
         <button type="submit" class="btn btn-primary btn-lg">Save Profile</button>

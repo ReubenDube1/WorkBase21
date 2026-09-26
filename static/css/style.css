@@ -1143,7 +1143,10 @@ a.trend-card:hover .trend-read-more { text-decoration: underline; }
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 14px;
 }
-.job-filter-field { display: flex; flex-direction: column; gap: 5px; }
+.job-filter-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+/* Grid items default to min-width:auto, so a long option like "No formal
+   qualification required" forced its column wider than a phone screen.
+   min-width:0 + width:100% keeps each box inside its column. */
 .job-filter-field label {
   font-size: 0.78rem;
   font-weight: 600;
@@ -1151,6 +1154,9 @@ a.trend-card:hover .trend-read-more { text-decoration: underline; }
 }
 .job-filter-field select,
 .job-filter-field input {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   font-family: var(--font-body);
   font-size: 0.88rem;
   color: var(--text);
@@ -1586,6 +1592,80 @@ a.career-map-node:hover { border-color: var(--primary); color: var(--primary); }
 .delete-list { margin: 8px 0 14px 20px; color: var(--text); font-size: 0.92rem; }
 .delete-list li { margin-bottom: 4px; }
 .form-help ul { margin: 6px 0 0 18px; }
+
+/* ==========================================================================
+   Header: account links in the hamburger menu, alert badge on the icon
+   ========================================================================== */
+.nav-account-item { display: none; }          /* desktop: they live in the header bar */
+.nav-alert-count {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #DC2626;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+.hamburger { position: relative; }
+.hamburger-badge {
+  position: absolute;
+  top: -8px;
+  right: -9px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #DC2626;
+  color: #fff;
+  font-size: 0.64rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+}
+
+/* ==========================================================================
+   Form errors: summary box + highlighted fields
+   (".form-group .form-error" is deliberately more specific than
+   ".narrow-content p", which used to turn error text grey so it looked
+   exactly like the help hints.)
+   ========================================================================== */
+.form-error-summary {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-left: 4px solid #DC2626;
+  border-radius: var(--radius-sm);
+  color: #991B1B;
+  padding: 14px 16px;
+  font-size: 0.9rem;
+  scroll-margin-top: calc(var(--header-height) + 16px);
+}
+.form-error-summary ul { margin: 8px 0 0 18px; display: flex; flex-direction: column; gap: 4px; }
+.form-error-summary a { color: #991B1B; font-weight: 700; text-decoration: underline; }
+.form-group { scroll-margin-top: calc(var(--header-height) + 24px); }
+.form-group .form-error,
+.form-group p.form-error {
+  color: #B91C1C;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin: 2px 0 0;
+}
+.form-group .form-error::before { content: "\26A0\FE0F  "; }
+.form-group.has-error label { color: #B91C1C; }
+.form-group.has-error .form-control {
+  border-color: #DC2626;
+  background: #FEF2F2;
+}
+.form-group.has-error .form-control:focus {
+  border-color: #DC2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.18);
+}
+.form-group .form-error-note { color: #92400E; font-size: 0.8rem; margin: 2px 0 0; }
+.form-group .form-help { color: var(--text-grey); font-size: 0.8rem; line-height: 1.5; }
+.form-group .form-help ul { margin: 4px 0 0 18px; padding: 0; }
+.form-group .form-help li { margin: 0; }
 
 @media (max-width: 640px) {
   .job-filters { padding: 16px 18px; }

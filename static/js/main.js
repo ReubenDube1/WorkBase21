@@ -201,3 +201,32 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
+/* ==========================================================================
+   Form errors: take the user straight to the first problem
+   ========================================================================== */
+(function () {
+  function focusField(group) {
+    if (!group) return;
+    var input = group.querySelector('input, select, textarea');
+    group.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (input) { setTimeout(function () { input.focus({ preventScroll: true }); }, 350); }
+  }
+  var firstError = document.querySelector('.form-group.has-error');
+  if (firstError) {
+    focusField(firstError);
+  } else {
+    // Errors that aren't tied to one box (e.g. "wrong username or password")
+    var summary = document.getElementById('form-error-summary');
+    if (summary) summary.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  document.querySelectorAll('.form-error-jump').forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      var target = document.getElementById(link.getAttribute('data-target'));
+      if (!target) return;
+      e.preventDefault();
+      focusField(target.closest('.form-group'));
+    });
+  });
+})();
+

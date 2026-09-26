@@ -51,6 +51,12 @@
 
     <nav class="main-nav" id="main-nav">
       <ul class="nav-links">
+        {% if user.is_authenticated %}
+        {% url 'profile' as profile_url %}{% url 'recommended_jobs' as for_you_url %}
+        {# Only shown inside the hamburger menu (phones/tablets) — on desktop these live in the header bar. #}
+        <li class="nav-account-item"><a href="{{ profile_url }}" class="{% if request.path == profile_url %}active{% endif %}">My Profile{% if job_alert_count %} <span class="nav-alert-count">{% if job_alert_count > 9 %}9+{% else %}{{ job_alert_count }}{% endif %} new</span>{% endif %}</a></li>
+        <li class="nav-account-item"><a href="{{ for_you_url }}" class="{% if request.path == for_you_url %}active{% endif %}">For You</a></li>
+        {% endif %}
         {% for item in nav_job_types %}
         <li><a href="{% url item.slug %}" class="{% if active_type == item.slug %}active{% endif %}">{{ item.label }}</a></li>
         {% endfor %}
@@ -69,8 +75,8 @@
       </form>
       <div class="auth-links">
         {% if user.is_authenticated %}
-          <a href="{% url 'recommended_jobs' %}" class="auth-link">For You</a>
-          <span class="auth-link-wrap">
+          <a href="{% url 'recommended_jobs' %}" class="auth-link auth-link-wide">For You</a>
+          <span class="auth-link-wrap auth-link-wide">
             <a href="{% url 'profile' %}" class="auth-link">My Profile</a>
             {% if job_alert_count %}<a href="{% url 'job_alerts' %}" class="alert-badge" title="{{ job_alert_count }} new listing{{ job_alert_count|pluralize }} matching your saved searches" aria-label="{{ job_alert_count }} new job alerts">{% if job_alert_count > 9 %}9+{% else %}{{ job_alert_count }}{% endif %}</a>{% endif %}
           </span>
@@ -83,8 +89,9 @@
           <a href="{% url 'register' %}" class="auth-link auth-link-cta">Sign Up</a>
         {% endif %}
       </div>
-      <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false" aria-controls="main-nav">
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu{% if job_alert_count %} ({{ job_alert_count }} new job alerts){% endif %}" aria-expanded="false" aria-controls="main-nav">
         <span></span><span></span><span></span>
+        {% if job_alert_count %}<i class="hamburger-badge" aria-hidden="true">{% if job_alert_count > 9 %}9+{% else %}{{ job_alert_count }}{% endif %}</i>{% endif %}
       </button>
     </div>
   </div>
