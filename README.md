@@ -118,40 +118,59 @@ workbase21/
 
 ---
 
-## 5. Deploying to Render (Free Tier)
+## 5. Deploying to Render (paid instance + persistent disk)
 
-**Step 1 — Push this project to a GitHub repository** (private or
-public, your choice).
+The database is SQLite stored on a Render **persistent disk** mounted
+at `/var/data` (see `DATABASES` in settings.py). Persistent disks need a
+paid instance type.
+
+**Step 1 — Push this project to a GitHub repository.** Check `git status`
+first: `venv/`, `db.sqlite3` and `media/` must NOT be listed (they're in
+`.gitignore`).
 
 **Step 2 — On Render, click New → Web Service** and connect the repo.
+Add a **Disk** with mount path `/var/data`.
 
 **Step 3 — Set the following:**
 - **Build Command:** `./build.sh`
-- **Start Command:** `gunicorn workbase21.wsgi`
+- **Start Command:** `python manage.py migrate --no-input && gunicorn workbase21.wsgi --log-file -`
+
+> ⚠️ Render ignores the `Procfile` — the Start Command in the dashboard
+> is what actually runs. Migrations MUST run in the Start Command, not
+> in build.sh: the disk isn't mounted during the build, so a migrate
+> there would update a throwaway database and miss the real one.
 
 **Step 4 — Add environment variables** under the Render dashboard:
 | Key | Value |
 |---|---|
 | `DJANGO_SECRET_KEY` | (generate a long random string) |
 | `DJANGO_DEBUG` | `False` |
+| `DJANGO_ALLOWED_HOSTS` | your domains, comma-separated |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | e.g. `https://workbase21.co.za,https://www.workbase21.co.za` |
 | `RENDER_EXTERNAL_HOSTNAME` | your-app-name.onrender.com |
-| `SITE_DOMAIN` | your-app-name.onrender.com (or your custom domain) |
+| `SITE_DOMAIN` | `workbase21.co.za` |
+| `EMAIL_HOST_USER` | the Gmail address the site sends from |
+| `EMAIL_HOST_PASSWORD` | a Google **App password** (needs 2-Step Verification) |
 
-**Step 5 — Deploy.** Render will run `build.sh` (installs
-dependencies, collects static files, runs migrations) and then start
-the app with gunicorn.
+**Step 5 — Deploy.** Render runs `build.sh` (installs dependencies,
+collects static files), then the Start Command (runs migrations on the
+disk database, starts gunicorn).
 
-**Step 6 — Create your production superuser.** In the Render Shell
-tab:
+**Step 6 — Create your production superuser** (first deploy only). In
+the Render Shell tab:
 ```bash
 python manage.py createsuperuser
 ```
 
-> Note: SQLite on Render's free tier resets on every redeploy since
-> the filesystem is ephemeral. This matches what you asked for
-> (SQLite + Render Free Tier), but keep in mind your data won't
-> persist across deploys unless you later move to a persistent disk
-> or PostgreSQL.
+**Optional:** `python manage.py seed_career_graph` adds starter career
+paths/skills (never overwrites existing data). Don't worry about
+`seed_demo_data` on production — it refuses to run if any jobs exist.
+
+**Before a deploy that includes new migrations**, back up the database
+from the Render Shell:
+```bash
+cp /var/data/db.sqlite3 /var/data/db-backup-$(date +%Y%m%d-%H%M).sqlite3
+```
 
 ---
 
