@@ -174,6 +174,27 @@ cp /var/data/db.sqlite3 /var/data/db-backup-$(date +%Y%m%d-%H%M).sqlite3
 
 ---
 
+## 4b. The Text Editor (TinyMCE)
+
+Job descriptions and blog articles are written in the admin with
+**TinyMCE 7.9.3**, bundled in `static/vendor/tinymce/` (GPL-2.0-or-later,
+free; see `VERSION.txt` there). It replaced django-ckeditor (CKEditor 4),
+which is unsupported and has known security issues.
+
+- Job descriptions: headings, bold/italic/underline, lists, links, view source.
+- Articles: the same, plus quotes and pictures (upload + align left/centre/right).
+- Picture uploads (`jobs/editor.py`): admins only; real JPG/PNG/GIF/WebP only
+  (no SVG); max 5 MB; saved in `media/uploads/`.
+- Existing content is kept exactly as saved. The fields are plain text in the
+  database; only the admin screen changed.
+
+**Updating TinyMCE later:** check https://github.com/tinymce/tinymce/security
+now and then. To update, download the new version from npm and replace the
+files in `static/vendor/tinymce/` (keep the same folder layout), update
+`VERSION.txt`, then run `python manage.py test` and `python manage.py phone_check`.
+
+---
+
 ## 5a. Backups & Restoring
 
 Everything that isn't code (listings, articles, companies, reviews, user

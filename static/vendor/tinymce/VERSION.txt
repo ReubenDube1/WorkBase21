@@ -1,0 +1,4 @@
+TinyMCE 7.9.3 (from npm: https://registry.npmjs.org/tinymce/-/tinymce-7.9.3.tgz)
+License: GPL-2.0-or-later (see license.md). Free for this site's use.
+Includes the fix for CVE-2026-47759 (fixed in 7.9.3).
+To upgrade later: replace this folder's files with the new version's.

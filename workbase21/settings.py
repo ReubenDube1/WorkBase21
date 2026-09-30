@@ -54,8 +54,6 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
 
     # Third-party apps
-    'ckeditor',
-    'ckeditor_uploader',
 
     # Local apps
     'jobs',
@@ -166,50 +164,13 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media files (job/company logo uploads, CKEditor uploads)
+# Media files (job/company logo uploads, images inserted in articles)
 MEDIA_URL = '/media/'
 
 if os.environ.get('RENDER') and os.path.exists('/var/data'):
     MEDIA_ROOT = '/var/data/media'
 else:
     MEDIA_ROOT = BASE_DIR / 'media'
-
-
-# CKEditor configuration
-CKEDITOR_UPLOAD_PATH = "uploads/"
-CKEDITOR_IMAGE_BACKEND = "pillow"
-CKEDITOR_CONFIGS = {
-    'default': {
-        'toolbar': 'Custom',
-        'toolbar_Custom': [
-            ['Bold', 'Italic', 'Underline'],
-            ['NumberedList', 'BulletedList'],
-            ['Link', 'Unlink'],
-            ['Format'],
-            ['RemoveFormat', 'Source'],
-        ],
-        'height': 300,
-        'width': '100%',
-    },
-    # Used for TrendingTopic article body fields — adds image insertion
-    # so pictures can be dropped in and positioned anywhere in the text,
-    # not just as a single banner image.
-    'article': {
-        'toolbar': 'Custom',
-        'toolbar_Custom': [
-            ['Bold', 'Italic', 'Underline'],
-            ['NumberedList', 'BulletedList'],
-            ['Blockquote'],
-            ['Link', 'Unlink'],
-            ['Image'],
-            ['Format'],
-            ['RemoveFormat', 'Source'],
-        ],
-        'height': 350,
-        'width': '100%',
-        'filebrowserUploadMethod': 'form',
-    },
-}
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

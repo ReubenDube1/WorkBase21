@@ -4,7 +4,21 @@ from django.urls import path, reverse
 from django.utils.safestring import mark_safe
 from django.http import JsonResponse
 from django.db.models import Count
+from .editor import RichTextEditor
 from .models import Company, Job, JobApplicationLink, Review, TrendingTopic, PageVisit, Skill
+
+
+
+class RichTextAdminMixin:
+    """Shows the listed text fields with the rich-text editor
+    (jobs/editor.py). The fields themselves are plain text in the
+    database, so the saved HTML is untouched."""
+    rich_text_fields = {}   # field name -> editor preset ('default' / 'article')
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name in self.rich_text_fields:
+            kwargs['widget'] = RichTextEditor(config=self.rich_text_fields[db_field.name])
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 
 class JobApplicationLinkInline(admin.TabularInline):
@@ -103,7 +117,8 @@ class FilterFieldsFilter(admin.SimpleListFilter):
 
 
 @admin.register(Job)
-class JobAdmin(admin.ModelAdmin):
+class JobAdmin(RichTextAdminMixin, admin.ModelAdmin):
+    rich_text_fields = {f: 'default' for f in ('description', 'description2', 'description3', 'description4', 'description5')}
     list_display = (
         'title', 'company', 'type', 'sector', 'location', 'salary',
         'deadline_display', 'views_display', 'saves_display', 'applied_display',
@@ -329,7 +344,8 @@ class PageVisitAdmin(admin.ModelAdmin):
 
 
 @admin.register(TrendingTopic)
-class TrendingTopicAdmin(admin.ModelAdmin):
+class TrendingTopicAdmin(RichTextAdminMixin, admin.ModelAdmin):
+    rich_text_fields = {f: 'article' for f in ('body', 'body2', 'body3', 'body4', 'body5')}
     list_display = ('title', 'image_preview', 'stat', 'icon', 'has_article', 'order', 'is_active', 'updated_at')
     list_editable = ('order', 'is_active')
     list_filter = ('is_active',)

@@ -58,6 +58,65 @@ OVERFLOW_JS = """() => {
 }"""
 
 
+
+# ---------------------------------------------------------------------------
+# Editor round-trip: content saved by the OLD editor (CKEditor 4) must survive
+# being opened and saved in the new editor (TinyMCE).
+# ---------------------------------------------------------------------------
+from html.parser import HTMLParser
+
+OLD_CKEDITOR_ARTICLE = (
+    '<h2>How to apply</h2>'
+    '<p>Read the <strong>requirements</strong> and <em>deadline</em> carefully, then <u>submit early</u>.</p>'
+    '<ul><li>Certified ID copy</li><li>Updated <a href="https://example.com/cv-tips" target="_blank">CV</a></li></ul>'
+    '<ol><li>Fill in the Z83</li><li>Email it</li></ol>'
+    '<blockquote><p>Tip: check your spam folder.</p></blockquote>'
+    '<p><img alt="Team photo" src="/media/uploads/2026/08/01/team.jpg" '
+    'style="float:left; height:200px; margin:10px; width:300px" />Text beside a left image.</p>'
+    '<p><img alt="Logo" src="/media/uploads/2026/08/01/logo.png" style="float:right; width:120px" />Text beside a right image.</p>'
+)
+OLD_CKEDITOR_JOB = ('<h2>About the role</h2><p>We need a <strong>motivated</strong> graduate with '
+                    '<u>Excel</u> skills.</p><ul><li>Capture data</li><li>Prepare reports</li></ul>'
+                    '<p>Apply at <a href="https://example.com/apply">our portal</a>.</p>')
+
+
+class _Features(HTMLParser):
+    """Pulls out what matters (headings, formatting, lists, links, quotes,
+    images and their position/size), ignoring harmless differences such as
+    spacing inside style="..." or attribute order."""
+    def __init__(self):
+        super().__init__()
+        self.found, self._stack = [], []
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag == 'img':
+            style = {k.strip(): v.strip() for k, v in (p.split(':', 1) for p in (a.get('style') or '').split(';') if ':' in p)}
+            self.found.append(('img', a.get('src'), a.get('alt'), style.get('float'), style.get('width')))
+        elif tag == 'a':
+            self.found.append(('a', a.get('href'), a.get('target')))
+        elif tag in ('h2', 'strong', 'em', 'u', 'ul', 'ol', 'li', 'blockquote'):
+            self._stack.append(tag)
+            self.found.append((tag, ''))
+
+    def handle_data(self, data):
+        if self._stack and data.strip():
+            tag = self._stack[-1]
+            for i in range(len(self.found) - 1, -1, -1):
+                if self.found[i][0] == tag:
+                    self.found[i] = (tag, (self.found[i][1] + ' ' + data.strip()).strip())
+                    break
+
+    def handle_endtag(self, tag):
+        if self._stack and self._stack[-1] == tag:
+            self._stack.pop()
+
+
+def features(html):
+    f = _Features()
+    f.feed(html)
+    return f.found
+
 @tag('browser')
 @unittest.skipIf(sync_playwright is None,
                  "Phone checks need Playwright: pip install -r requirements-dev.txt && playwright install chromium")
@@ -233,3 +292,64 @@ class PhoneChecks(StaticLiveServerTestCase):
         self.page.click('#contact-result button')
         self.page.wait_for_timeout(300)
         self.assertFalse(self.page.evaluate("document.getElementById('contact-result').open"))
+
+    # --- admin editor ----------------------------------------------------
+    def log_in_admin(self):
+        from .helpers import make_admin
+        self.user = make_admin()
+        self.log_in()
+
+    def open_editor(self, url):
+        self.open(url, 1280, 900)
+        self.page.wait_for_function(
+            "window.tinymce && tinymce.get().length === 5 && tinymce.get().every(e => e.initialized)",
+            timeout=20000)
+
+    def test_editor_keeps_old_content_and_uploads_images(self):
+        import shutil, tempfile
+        from pathlib import Path
+        from django.test import override_settings
+        from jobs.models import TrendingTopic
+        media = tempfile.mkdtemp()
+        with override_settings(MEDIA_ROOT=media):
+            self.log_in_admin()
+            article = TrendingTopic.objects.create(title='Z83 guide', body=OLD_CKEDITOR_ARTICLE)
+            job = make_job('Clerk', description=OLD_CKEDITOR_JOB)
+
+            # Job: open in the new editor and save without touching anything.
+            self.open_editor(reverse('admin:jobs_job_change', args=[job.pk]))
+            with self.page.expect_navigation():
+                self.page.click('input[name=_save]')
+            job.refresh_from_db()
+            self.assertEqual(features(job.description), features(OLD_CKEDITOR_JOB),
+                             "job description formatting changed after saving in the new editor")
+
+            # Article: open, add a new picture through the editor's upload, position it, save.
+            self.open_editor(reverse('admin:jobs_trendingtopic_change', args=[article.pk]))
+            tiny_png = ('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP8z8DAwMDAxMDAwMDAAAANHQEDasKb6QAAAABJRU5ErkJggg==')
+            self.page.evaluate("""async (b64) => {
+                const ed = tinymce.get()[0];
+                ed.selection.select(ed.getBody(), true); ed.selection.collapse(false);
+                ed.insertContent('<p><img id="newpic" alt="New" src="data:image/png;base64,' + b64 + '"></p>');
+                await ed.uploadImages();
+                ed.selection.select(ed.dom.select('img#newpic')[0] || ed.dom.select('img').pop());
+                ed.execCommand('JustifyRight');
+            }""", tiny_png)
+            with self.page.expect_navigation():
+                self.page.click('input[name=_save]')
+            article.refresh_from_db()
+
+            saved = features(article.body)
+            original = features(OLD_CKEDITOR_ARTICLE)
+            self.assertEqual(saved[:len(original)], original,
+                             "article formatting (headings, underline, links, quotes, image positions) changed")
+            new_img = [f for f in saved if f[0] == 'img' and f[2] == 'New']
+            self.assertEqual(len(new_img), 1, "the new picture should be in the article")
+            self.assertTrue(new_img[0][1].startswith('/media/uploads/'), f"new picture not uploaded: {new_img[0][1][:60]}")
+            self.assertEqual(new_img[0][3], 'right', "new picture should be positioned right")
+            self.assertEqual(len(list(Path(media).rglob('*.png'))), 1, "the uploaded file should be saved")
+
+            # Visitors see the article with both old images still floated.
+            self.open(article.get_absolute_url() if hasattr(article, 'get_absolute_url') else '/', 1280)
+        shutil.rmtree(media, ignore_errors=True)
+

@@ -23,7 +23,7 @@ class WorkBaseTestRunner(DiscoverRunner):
         # emailed", or errors from tests that simulate Gmail being down) are
         # expected during tests, so they aren't printed. Tests that check
         # logging still see them.
-        for name in ('jobs', 'accounts', 'django.contrib.auth', 'django.request'):
+        for name in ('jobs', 'accounts', 'django.contrib.auth', 'django.request', 'django.security'):
             logger = logging.getLogger(name)
             logger.handlers = [logging.NullHandler()]
             logger.propagate = False

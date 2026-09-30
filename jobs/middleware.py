@@ -10,7 +10,7 @@ import re
 from .models import PageVisit
 
 # Paths we never want cluttering the analytics — admin, static/media
-# assets, CKEditor, and the various SEO/bot-facing endpoints.
+# assets, the old CKEditor address, and the various SEO/bot-facing endpoints.
 _EXCLUDED_PREFIXES = (
     '/admin/', '/ckeditor/', '/static/', '/media/',
 )

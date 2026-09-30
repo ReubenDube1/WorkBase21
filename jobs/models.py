@@ -2,7 +2,6 @@ from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
-from ckeditor_uploader.fields import RichTextUploadingField
 
 
 class Company(models.Model):
@@ -180,20 +179,20 @@ class Job(models.Model):
     )
 
     # Five description blocks so ads can be placed between each one.
-    description = RichTextUploadingField(
+    description = models.TextField(
         "Description Part 1",
         help_text="Shown first, above the advertisement blocks."
     )
-    description2 = RichTextUploadingField(
+    description2 = models.TextField(
         "Description Part 2", blank=True
     )
-    description3 = RichTextUploadingField(
+    description3 = models.TextField(
         "Description Part 3", blank=True
     )
-    description4 = RichTextUploadingField(
+    description4 = models.TextField(
         "Description Part 4", blank=True
     )
-    description5 = RichTextUploadingField(
+    description5 = models.TextField(
         "Description Part 5", blank=True
     )
 
@@ -451,11 +450,10 @@ class TrendingTopic(models.Model):
         )
     )
 
-    body = RichTextUploadingField(
+    body = models.TextField(
         "Article Body — Part 1",
         blank=True,
         default='',
-        config_name='article',
         help_text=(
             "Optional. Leave blank to keep this as a stat-only homepage "
             "card. Fill this in to publish a full article page — the "
@@ -464,10 +462,10 @@ class TrendingTopic(models.Model):
             "anywhere in the text."
         )
     )
-    body2 = RichTextUploadingField("Article Body — Part 2", blank=True, default='', config_name='article')
-    body3 = RichTextUploadingField("Article Body — Part 3", blank=True, default='', config_name='article')
-    body4 = RichTextUploadingField("Article Body — Part 4", blank=True, default='', config_name='article')
-    body5 = RichTextUploadingField("Article Body — Part 5", blank=True, default='', config_name='article')
+    body2 = models.TextField("Article Body — Part 2", blank=True, default='')
+    body3 = models.TextField("Article Body — Part 3", blank=True, default='')
+    body4 = models.TextField("Article Body — Part 4", blank=True, default='')
+    body5 = models.TextField("Article Body — Part 5", blank=True, default='')
 
     author_name = models.CharField(
         max_length=100,

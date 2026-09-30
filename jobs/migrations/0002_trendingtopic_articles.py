@@ -1,4 +1,3 @@
-import ckeditor_uploader.fields
 import django.utils.timezone
 from django.db import migrations, models
 
@@ -45,7 +44,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='trendingtopic',
             name='body',
-            field=ckeditor_uploader.fields.RichTextUploadingField(blank=True, default='', help_text="Optional. Leave blank to keep this as a stat-only homepage card. Fill this in to publish a full article page — the homepage card automatically becomes clickable.", verbose_name='Article Body'),
+            field=models.TextField(blank=True, default='', help_text="Optional. Leave blank to keep this as a stat-only homepage card. Fill this in to publish a full article page — the homepage card automatically becomes clickable.", verbose_name='Article Body'),
         ),
         migrations.AddField(
             model_name='trendingtopic',
