@@ -353,3 +353,40 @@ class PhoneChecks(StaticLiveServerTestCase):
             self.open(article.get_absolute_url() if hasattr(article, 'get_absolute_url') else '/', 1280)
         shutil.rmtree(media, ignore_errors=True)
 
+    def test_insert_article_link_picker(self):
+        from jobs.models import TrendingTopic
+        self.log_in_admin()
+        guide = TrendingTopic.objects.create(title='How to fill in the Z83', body='<p>Guide text</p>')
+        TrendingTopic.objects.create(title='Unpublished draft', body='<p>x</p>', is_active=False)
+        job = make_job('Clerk', description='<p>Download the form before applying.</p>',
+                       description2='<p>More info:</p>')
+        self.open_editor(reverse('admin:jobs_job_change', args=[job.pk]))
+        self.page.wait_for_selector('.article-link-picker select')
+
+        # Picker sits directly above the Description Part 1 editor, lists only published articles.
+        picker = self.page.locator('.article-link-picker').bounding_box()
+        editor1 = self.page.locator('#id_description + .tox-tinymce').bounding_box()
+        self.assertLess(picker['y'], editor1['y'], "picker should be above the first description editor")
+        options = self.page.eval_on_selector_all('.article-link-select option', "els => els.map(e => e.textContent)")
+        self.assertIn('How to fill in the Z83', options)
+        self.assertNotIn('Unpublished draft', options, "hidden articles must not be offered")
+        self.page.select_option('.article-link-select', label='How to fill in the Z83')
+
+        # 1) Click into Part 2, insert -> link lands in Part 2 with the article title.
+        self.page.evaluate("tinymce.get('id_description2').focus(); tinymce.get('id_description2').selection.select(tinymce.get('id_description2').getBody(), true); tinymce.get('id_description2').selection.collapse(false);")
+        self.page.click('.article-link-insert')
+        # 2) Select words in Part 1 -> those words become the link.
+        self.page.evaluate("""() => { const ed = tinymce.get('id_description'); ed.focus();
+            const p = ed.getBody().querySelector('p'); const r = ed.dom.createRng();
+            r.setStart(p.firstChild, 'Download '.length); r.setEnd(p.firstChild, 'Download the form'.length);
+            ed.selection.setRng(r); }""")
+        self.page.click('.article-link-insert')
+        with self.page.expect_navigation():
+            self.page.click('input[name=_save]')
+        job.refresh_from_db()
+        url = guide.get_absolute_url()
+        self.assertIn(f'href="{url}"', job.description2, "link should be inserted into the box last clicked (Part 2)")
+        self.assertIn('How to fill in the Z83</a>', job.description2)
+        self.assertRegex(job.description, r'<a href="' + url + r'"[^>]*>the form</a>', "selected words should become the link")
+        self.assertIn('Download ', job.description)
+

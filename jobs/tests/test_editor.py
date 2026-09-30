@@ -64,6 +64,19 @@ class EditorWiringTest(WBTestCase):
         self.assertPageHas(self.client.get(job.get_absolute_url()), html)
 
 
+    def test_article_link_picker_lists_published_articles_only(self):
+        TrendingTopic.objects.create(title='Z83 guide', body='<p>Guide</p>')
+        TrendingTopic.objects.create(title='Hidden', body='<p>x</p>', is_active=False)
+        TrendingTopic.objects.create(title='Stat card only', body='')
+        r = self.client.get(reverse('admin:jobs_job_article_links'))
+        titles = [a['title'] for a in r.json()]
+        self.assertIn('Z83 guide', titles)
+        self.assertNotIn('Hidden', titles, "hidden articles must not be offered")
+        self.assertNotIn('Stat card only', titles, "cards without an article page must not be offered")
+        page = self.client.get(reverse('admin:jobs_job_add')).content.decode()
+        self.assertIn('admin_insert_article_link.js', page, "the picker script must load on the job form")
+
+
 class ImageUploadTest(WBTestCase):
     def setUp(self):
         super().setUp()
