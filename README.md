@@ -278,6 +278,10 @@ Tests live in `jobs/tests/` and `accounts/tests/`.
   `jobs/sitemaps.py`). The sitemap lists listings, published articles,
   Career Explorer pages and the main static pages.
 - Tests: `jobs/tests/test_seo.py`.
+- **Content audit:** `python manage.py content_audit` (read-only) lists thin
+  articles and listings, duplicate titles, identical text, placeholder text
+  and images without alt text. Run it in the Render Shell and keep the output
+  to track progress. Tests: `jobs/tests/test_content_audit.py`.
 
 **Adding articles:** `python manage.py seed_article_drafts` creates hidden
 draft articles (safe to re-run; never overwrites). Open each in the admin,
