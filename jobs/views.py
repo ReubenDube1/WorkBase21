@@ -525,16 +525,21 @@ def ads_txt(request):
 
 def robots_txt(request):
     """
-    Serve /robots.txt — allows crawling everywhere except the admin
-    and CKEditor upload endpoints, and points crawlers at the sitemap
-    so new/updated jobs and articles get discovered and indexed.
+    Serve /robots.txt — lets crawlers read all the real content, keeps
+    them out of the admin, account pages, search results and other pages
+    with no content of their own, and points them at the sitemap so new
+    and updated jobs and articles get discovered.
     """
     from django.http import HttpResponse
 
     lines = [
         "User-agent: *",
         "Disallow: /admin/",
-        "Disallow: /ckeditor/",
+        "Disallow: /accounts/",
+        "Disallow: /search/",
+        "Disallow: /recommended/",
+        "Disallow: /job/*/eligibility/",
+        "Disallow: /job/*/save/",
         "Allow: /",
         "",
         f"Sitemap: https://{settings.SITE_DOMAIN}/sitemap.xml",

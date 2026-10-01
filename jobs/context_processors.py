@@ -32,3 +32,22 @@ def filter_choices(request):
         'industry_choices': Job.INDUSTRY_CHOICES,
         'all_skills': Skill.objects.filter(jobs__is_active=True).distinct(),
     }
+
+
+# --- SEO + advertising rules, decided per page ------------------------------
+# Google asks publishers not to show ads on pages without real content
+# (login/sign-up forms, search results, account pages, contact forms), and
+# search engines shouldn't index those pages either. Deciding it here, in one
+# place, means every current and future page follows the same rules.
+import re as _re
+
+NOINDEX_PREFIXES = ('/accounts/', '/search/', '/recommended/')
+NO_ADS_PREFIXES = NOINDEX_PREFIXES + ('/contact/', '/admin/')
+_NO_ADS_PATTERNS = (_re.compile(r'^/job/\d+/(eligibility|save)/'),)
+
+
+def seo_flags(request):
+    path = request.path
+    noindex = path.startswith(NOINDEX_PREFIXES)
+    no_ads = path.startswith(NO_ADS_PREFIXES) or any(p.match(path) for p in _NO_ADS_PATTERNS)
+    return {'seo_noindex': noindex, 'show_ads': not no_ads}

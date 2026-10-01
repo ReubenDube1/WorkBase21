@@ -95,6 +95,7 @@ TEMPLATES = [
                 # available on every single page (used in base.html)
                 'jobs.context_processors.job_types',
                 'jobs.context_processors.filter_choices',
+                'jobs.context_processors.seo_flags',
                 'accounts.context_processors.job_alert_count',
             ],
         },

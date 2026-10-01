@@ -8,7 +8,7 @@ from django.views.static import serve as static_serve
 from django.contrib.sitemaps.views import sitemap
 
 from jobs.views import ads_txt, robots_txt
-from jobs.sitemaps import JobSitemap, ArticleSitemap, StaticViewSitemap
+from jobs.sitemaps import JobSitemap, ArticleSitemap, CareerSitemap, StaticViewSitemap
 from jobs.editor import upload_image as editor_upload_image
 from jobs.admin_views import (
     analytics_dashboard, listing_insights, backups_page, backup_download_db,
@@ -18,6 +18,7 @@ from jobs.admin_views import (
 sitemaps = {
     'jobs': JobSitemap,
     'articles': ArticleSitemap,
+    'careers': CareerSitemap,
     'static': StaticViewSitemap,
 }
 

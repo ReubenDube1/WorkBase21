@@ -266,6 +266,27 @@ Tests live in `jobs/tests/` and `accounts/tests/`.
 
 ---
 
+## 5d. Search & AdSense readiness
+
+- **Which pages are indexed and which show ads** is decided in one place:
+  `seo_flags()` in `jobs/context_processors.py`. Login, sign-up, password
+  reset, search, account pages, the Contact form and the 404 page are
+  `noindex` and load no AdSense script (Google asks that ads only appear on
+  pages with real content). Everything else is indexable and may show ads.
+  To make a new page ad-free, add its address start to `NO_ADS_PREFIXES`.
+- `robots.txt` and `sitemap.xml` are generated (`jobs/views.py`,
+  `jobs/sitemaps.py`). The sitemap lists listings, published articles,
+  Career Explorer pages and the main static pages.
+- Tests: `jobs/tests/test_seo.py`.
+
+**Adding articles:** `python manage.py seed_article_drafts` creates hidden
+draft articles (safe to re-run; never overwrites). Open each in the admin,
+edit it so it reflects your own knowledge, check the facts, then tick
+"Is active". Placeholder articles from `seed_demo_data` must never be
+published as they are.
+
+---
+
 ## 5b. Connecting Your Custom Domain (workbase21.co.za)
 
 Congrats on the domain! Here's how to point it at your Render app.

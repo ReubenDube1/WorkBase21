@@ -1,6 +1,7 @@
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 
+from accounts.models import CareerPath
 from .models import Job, TrendingTopic
 
 
@@ -47,6 +48,8 @@ class StaticViewSitemap(Sitemap):
             ('learnerships', 0.9),
             ('bursaries', 0.9),
             ('trending_list', 0.8),
+            ('careers', 0.8),
+            ('market_insights', 0.7),
             ('about', 0.5),
             ('contact', 0.5),
             ('privacy', 0.3),
@@ -58,3 +61,16 @@ class StaticViewSitemap(Sitemap):
 
     def priority(self, item):
         return item[1]
+
+
+class CareerSitemap(Sitemap):
+    """The public Career Explorer pages."""
+    changefreq = "monthly"
+    priority = 0.6
+
+    def items(self):
+        return CareerPath.objects.filter(is_active=True)
+
+    def location(self, obj):
+        return obj.get_absolute_url()
+
