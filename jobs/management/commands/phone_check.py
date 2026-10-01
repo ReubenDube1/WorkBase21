@@ -4,7 +4,10 @@
 
 One-time setup on your computer:
     pip install -r requirements-dev.txt
-    playwright install chromium
+    playwright install chromium        (optional)
+
+If `playwright install chromium` can't download (blocked network etc.), the
+checks use Google Chrome or Microsoft Edge already installed on your computer.
 """
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
@@ -18,9 +21,10 @@ class Command(BaseCommand):
             import playwright  # noqa: F401
         except ImportError:
             self.stdout.write(self.style.ERROR("Phone checks need Playwright, which isn't installed yet."))
-            self.stdout.write("Run these two commands once, then try again:\n"
+            self.stdout.write("Run this once, then try again:\n"
                               "    pip install -r requirements-dev.txt\n"
-                              "    playwright install chromium")
+                              "(You also need Google Chrome or Microsoft Edge installed, or run "
+                              "`playwright install chromium`.)")
             return
         self.stdout.write("Opening the site in a real browser at phone, tablet and laptop sizes "
                           "(takes a few minutes)...")

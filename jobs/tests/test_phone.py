@@ -8,7 +8,14 @@ pop-up behaves, and form errors are highlighted.
 Not part of the normal `python manage.py test` (they're slower).
 Run them with:   python manage.py phone_check
 One-time setup:  pip install -r requirements-dev.txt
-                 playwright install chromium
+                 playwright install chromium     (optional, see below)
+
+Which browser is used (first one that starts):
+  1. Playwright's own Chromium (from `playwright install chromium`)
+  2. Google Chrome already installed on this computer
+  3. Microsoft Edge already installed on this computer (built into Windows)
+So if the Playwright browser can't be downloaded (blocked network, firewall,
+VPN...), the checks still run using the Chrome or Edge you already have.
 """
 import os
 import unittest
@@ -32,6 +39,13 @@ except ImportError:  # pragma: no cover
 
 # Playwright runs its own event loop; this lets Django's database calls work alongside it.
 os.environ.setdefault('DJANGO_ALLOW_ASYNC_UNSAFE', 'true')
+
+# Tried in this order; the first that starts is used.
+BROWSER_CHOICES = [
+    ("Playwright's own Chromium", {}),
+    ("Google Chrome (installed on this computer)", {'channel': 'chrome'}),
+    ("Microsoft Edge (installed on this computer)", {'channel': 'msedge'}),
+]
 
 PHONE, TABLET, LAPTOP = [320, 360, 375, 414], [768, 1024], [1280, 1366, 1440]
 ALL_WIDTHS = PHONE + TABLET + LAPTOP
@@ -126,12 +140,23 @@ class PhoneChecks(StaticLiveServerTestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.pw = sync_playwright().start()
-        try:
-            cls.browser = cls.pw.chromium.launch()
-        except Exception as e:
+        cls.browser, cls.browser_name, tried = None, None, []
+        for label, options in BROWSER_CHOICES:
+            try:
+                cls.browser = cls.pw.chromium.launch(**options)
+                cls.browser_name = label
+                break
+            except Exception as e:  # not installed / can't start: try the next one
+                tried.append(f"  - {label}: {str(e).strip().splitlines()[0][:110]}")
+        if cls.browser is None:
             cls.pw.stop()
             super().tearDownClass()
-            raise unittest.SkipTest(f"Browser not installed — run: playwright install chromium ({e.__class__.__name__})")
+            message = ("No browser could be started for the phone checks, so NONE of them ran.\n"
+                       "Fix: run `playwright install chromium`, or install Google Chrome / Microsoft Edge.\n"
+                       "What was tried:\n" + "\n".join(tried))
+            print("\n" + message, flush=True)    # unittest hides skip reasons by default
+            raise unittest.SkipTest(message)
+        print(f"\n[phone checks are using: {cls.browser_name}]", flush=True)
 
     @classmethod
     def tearDownClass(cls):

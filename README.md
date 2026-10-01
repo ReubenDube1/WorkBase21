@@ -251,9 +251,14 @@ weekly backup email, and privacy (job seekers can't see each other's data).
 sizes.** Run before layout/design changes:
 ```
 pip install -r requirements-dev.txt      (one time)
-playwright install chromium              (one time, downloads a browser)
+playwright install chromium              (optional: downloads a browser, ~150 MB)
 python manage.py phone_check
 ```
+The checks use Playwright's own browser if it's installed; otherwise the
+Google Chrome or Microsoft Edge already on your computer (Windows always has
+Edge). So if `playwright install chromium` can't download (blocked network,
+firewall, VPN), you can skip it. The first line of the output says which
+browser was used.
 
 Tests use a temporary practice database (`test_db.sqlite3`, deleted
 automatically) — never your real data — and never send real emails.
