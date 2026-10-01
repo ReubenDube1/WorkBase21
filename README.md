@@ -282,6 +282,11 @@ Tests live in `jobs/tests/` and `accounts/tests/`.
   articles and listings, duplicate titles, identical text, placeholder text
   and images without alt text. Run it in the Render Shell and keep the output
   to track progress. Tests: `jobs/tests/test_content_audit.py`.
+- **AI-leftover scan:** `python manage.py scan_ai_leftovers` (read-only) finds
+  text and links pasted straight from an AI chat without being edited — e.g.
+  "Would you like me to tailor this further?" or an "Apply Now" link containing
+  `utm_source=chatgpt`. Built after finding exactly this in two live listings.
+  Tests: `jobs/tests/test_scan_ai_leftovers.py`.
 
 **Adding articles:** `python manage.py seed_article_drafts` creates hidden
 draft articles (safe to re-run; never overwrites). Open each in the admin,
